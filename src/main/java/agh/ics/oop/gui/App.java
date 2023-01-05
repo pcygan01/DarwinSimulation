@@ -14,7 +14,7 @@ import java.util.List;
 
 
 public class App extends Application {
-    private AbstractWorldMap map;
+    private GrassField map;
     private IEngine engine;
     private Vector2d[] positions;
     public void init(){

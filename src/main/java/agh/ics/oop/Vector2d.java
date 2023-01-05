@@ -5,10 +5,12 @@ import java.util.Objects;
 public class Vector2d {
     public final int x;
     public final int y;
+    private int deadAnimals;
 
     public Vector2d(int x, int y){
         this.x = x;
         this.y = y;
+        this.deadAnimals = 0;
     }
 
     public String toString(){
@@ -47,6 +49,10 @@ public class Vector2d {
 
     Vector2d opposite(){
         return new Vector2d(-this.x, -this.y);
+    }
+
+    public int getDeadAnimals() {
+        return deadAnimals;
     }
 
     @Override

@@ -1,51 +1,51 @@
 package agh.ics.oop;
 
 
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Animal extends AbstractWorldMapElement{
     private MapDirection direction;
     private GrassField map;
     private int energy;
     private final int moveEnergy;
-    private final int startEnergy;
-    private final Gene genome;
-    private int childrenAmount = 0;
-    private int lifeSpan = 0;
+//    private final int startEnergy;
+    private final Gene genes;
+    private int childrenAmount;
+    private int daysLived;
+    private final int minMutation;
+    private final int maxMutation;
+    private final boolean mutationType; //0 - pełna losowość, 1 - lekka korekta
+    private final boolean behaviorType; //0 - pełna predestynacja, 1 - nieco szaleństwa
 
-
-    public Animal(GrassField map, Vector2d initialPosition){
+    private final int energyToReproduce;
+    public Animal(GrassField map, Vector2d initialPosition, int energy, int moveEnergy, int startEnergy, int n, int minMutation, int maxMutation, boolean mutationType, boolean behaviorType, int genesLength, int energyToReproduce){
         super(initialPosition);
         this.direction = MapDirection.NORTH;
         this.map = map;
         this.observers = new ArrayList<>();
+        this.energy = energy;
+        this.moveEnergy = moveEnergy;
+        //this.startEnergy = startEnergy;
+        this.genes = new Gene(genesLength);
+        this.childrenAmount = 0;
+        this.daysLived = 0;
+        this.energy = startEnergy;
+        this.minMutation = minMutation;
+        this.maxMutation = maxMutation;
+        this.mutationType = mutationType;
+        this.behaviorType = behaviorType;
+        this.energyToReproduce = energyToReproduce;
     }
-
-    //konstruktor bezparametrowy nie ma teraz sensu, ponieważ każde zwierzę musi mieć pokazaną mapę na którą sie może poruszać,
-    //dodatkowo możemy "zagnieżdżać konstruktory", dzięki czemu konstruktor z 3 argumentami może korzystać z konstruktora z 2 itd.
-    //nie zrobiłem tak w tym rozwiązaniu, ponieważ nie byłem o to proszony
-
-
     public String toString(){
         return (this.direction.toString());
     }
 
     public MapDirection getDirection() {
         return direction;
-    }
-
-
-
-    public boolean isAt(Vector2d position){
-        return this.position.equals(position);
-    }
-
-    public void addObserver(IPositionChangeObserver observer){
-        observers.add(observer);
-    }
-    public void removeObserver(IPositionChangeObserver observer){
-        observers.remove(observer);
     }
 
     public void positionChanged(Vector2d newPosition){
@@ -55,26 +55,38 @@ public class Animal extends AbstractWorldMapElement{
         this.position = newPosition;
     }
 
-    public void move(MoveDirection direction){
-        Vector2d newPos = new Vector2d(0,0);
-        boolean moved = false;
-        switch(direction){
-            case FORWARD -> {
-                newPos = this.position.add(this.direction.toUnitVector());
-                moved = true;
+    public void move(){
+        Vector2d newPos;
+        MapDirection moveDirection = this.genes.getMove(this.behaviorType);
+        boolean moved = true;
+        newPos = this.position.add(moveDirection.toUnitVector());
+        this.direction = moveDirection;
+        if (!this.map.getBorderType()){//ziemia
+            if (newPos.x < this.map.getLowerLeft().x){
+                newPos = new Vector2d(this.map.getUpperRight().x, newPos.y);
+            } else if (newPos.x > this.map.getUpperRight().x) {
+                newPos = new Vector2d(this.map.getLowerLeft().x, newPos.y);
             }
-            case BACKWARD -> {
-                newPos = this.position.add(this.direction.toUnitVector().opposite());
-                moved = true;
+            if (newPos.y < this.map.getLowerLeft().y || newPos.y > this.map.getUpperRight().y){
+                this.direction = this.direction.opposite();
+                moved = false;
             }
-            case RIGHT -> this.direction = this.direction.next();
-            case LEFT -> this.direction = this.direction.previous();
         }
-        if (moved){
-            if (this.map.canMoveTo(newPos)){
+        else{//piekielny portal
+            if(!(newPos.follows(this.map.getLowerLeft()) && newPos.precedes(this.map.getUpperRight()))){
+               this.energy = this.energy - this.energyToReproduce;
+               Random random = new Random();
+               int randomX = random.nextInt(this.map.getUpperRight().x+1);
+               int randomY = random.nextInt(this.map.getUpperRight().y+1);
+               newPos = new Vector2d(randomX, randomY);
+            }
+        }
+        if(moved){
+            if (this.map.canMoveTo(newPos)){ //chyba zwykle move no bo moze
                 positionChanged(newPos);
             }
         }
+
     }
 
 }
