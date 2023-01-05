@@ -7,7 +7,7 @@ import static java.lang.Math.*;
 
 
 
-public class GrassField implements IWorldMap, IPositionChangeObserver{
+public class GrassField implements IPositionChangeObserver{
     private final int n;
     private Map<Vector2d, ArrayList<Animal>> animals;
     private Map<Vector2d, Grass> grasses;
@@ -67,12 +67,10 @@ public class GrassField implements IWorldMap, IPositionChangeObserver{
         throw new IllegalArgumentException(animal.getPosition() + " is not a valid position to place to");
     }
 
-    @Override
     public boolean canMoveTo(Vector2d position) {
         return true;
     }
 
-    @Override
     public Object objectAt(Vector2d position){
         if (animals.get(position) == null)
             return grasses.get(position);
@@ -173,7 +171,6 @@ public class GrassField implements IWorldMap, IPositionChangeObserver{
         }
     }
     public void updateVectors(Vector2d vector){ //when animals die
-        //TODO: update this
         int i = this.sortedVectors.indexOf(vector);
         while (i + 1 < sortedVectors.size() && sortedVectors.get(i+1).getDeadAnimals() < vector.getDeadAnimals()){
             Collections.swap(sortedVectors, i, i+1);

@@ -22,7 +22,7 @@ public class Animal extends AbstractWorldMapElement{
     private final boolean behaviorType; //0 - pełna predestynacja, 1 - nieco szaleństwa
 
     private final int energyToReproduce;
-    public Animal(GrassField map, Vector2d initialPosition, int energy, int moveEnergy, int startEnergy, int n, int minMutation, int maxMutation, boolean mutationType, boolean behaviorType, int genesLength, int energyToReproduce){
+    public Animal(GrassField map, Vector2d initialPosition, int energy, int moveEnergy, int minMutation, int maxMutation, boolean mutationType, boolean behaviorType, int genesLength, int energyToReproduce){
         super(initialPosition);
         this.direction = MapDirection.NORTH;
         this.map = map;
@@ -33,7 +33,6 @@ public class Animal extends AbstractWorldMapElement{
         this.genes = new Gene(genesLength);
         this.childrenAmount = 0;
         this.daysLived = 0;
-        this.energy = startEnergy;
         this.minMutation = minMutation;
         this.maxMutation = maxMutation;
         this.mutationType = mutationType;
@@ -50,7 +49,7 @@ public class Animal extends AbstractWorldMapElement{
 
     public void positionChanged(Vector2d newPosition){
         for(IPositionChangeObserver observer: observers){
-            observer.positionChanged(this.position, newPosition);
+            observer.positionChanged(this, this.position, newPosition);
         }
         this.position = newPosition;
     }
