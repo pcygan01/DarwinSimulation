@@ -1,0 +1,16 @@
+heightWorld 100
+widthWorld 100
+initialNumberOfPlants 100
+plantEnergy 20
+numberOfNewPlants 30
+initialNumberOfAnimals 100
+startAnimalEnergy 100
+minEnergyToReproduction 50
+energyUsedToReproduction 30
+minNumberOfMutations 00
+maxNumberOfMutations 50
+DNAlength 80
+mapVariant true
+grassVariant true
+mutationVariant true
+behaviourVariant true

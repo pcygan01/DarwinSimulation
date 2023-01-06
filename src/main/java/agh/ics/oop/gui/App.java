@@ -17,23 +17,51 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.security.KeyStore;
 import java.util.List;
+import java.util.Scanner;
 
 
 public class App extends Application {
     private final VBox vbox = new VBox();
 
-    public static void main(String[] args){
+    private int heightWorldParameter; // wysokość mapy
+    private int widthWorldParameter; // szerokość mapy
+
+    // rośliny
+    private int initialNumberOfPlantsParameter; // startowa liczba roślin
+    private int plantEnergyParameter; // energia zapewniana przez zjedzenie rośliny
+    private int numberOfNewPlantsParameter; // liczba roślin wyrastająca każdego dnia
+
+    // zwierzęta
+    private int initialNumberOfAnimalsParameter; // startowa liczba zwierzaków
+    private int startAnimalEnergyParameter; // startowa energia zwierzaków
+    private int minEnergyToReproductionParameter; // energia konieczna, by uznać zwierzaka za najedzonego (i gotowego do rozmnażania)
+    private int energyUsedToReproductionParameter; // energia rodziców zużywana by stworzyć potomka
+    private int minNumberOfMutationsParameter; // minimalna liczba mutacji u potomków
+    private int maxNumberOfMutationsParameter; // maksymalna liczba mutacji u potomków
+    private int DNAlengthParameter; // długość genomu zwierzaków
+
+    // warianty
+    private boolean mapVariantParameter; // false - kula ziemska, true - piekielny portal
+    private boolean grassVariantParameter; // false - zalesione równiki, true - toksyczne trupy
+    private boolean mutationVariantParameter; // false - pełna losowość, true - lekka korekta
+    private boolean behaviourVariantParameter; // false - pełna predystancja, true - nieco szaleństwa
+
+    public static void main(String[] args) {
         Application.launch(App.class);
     }
-    public void start(Stage primaryStage) throws Exception{
+
+    public void start(Stage primaryStage) throws Exception {
         Scene scene = new Scene(vbox, 950, 950, Color.web("#81c483"));
         primaryStage.setScene(scene);
         primaryStage.setTitle("Darwin Simulation");
         primaryStage.show();
     }
 
-    public void init() throws Exception{
+    public void init() throws Exception {
         Label header = new Label("Welcome in Darwin Simulation");
         header.setFont(new Font("Arial", 40));
         header.setTextFill(Color.WHITE);
@@ -64,7 +92,29 @@ public class App extends Application {
         vbox.setAlignment(Pos.CENTER);
     }
 
-    public void showSecondScene(){
+    public void showSecondScene() {
+        Button mySettingsButton = new Button("My settings");
+        mySettingsButton.setFont(new Font("Arial", 30));
+        mySettingsButton.setOnAction((event -> showMySettings()));
+
+        Button predefinedButton = new Button("Predefined settings");
+        predefinedButton.setFont(new Font("Arial", 30));
+        predefinedButton.setOnAction((event -> showPredefinedSettings()));
+
+        HBox buttonsBox = new HBox(predefinedButton, mySettingsButton);
+        buttonsBox.setAlignment(Pos.CENTER);
+        buttonsBox.setSpacing(100);
+        buttonsBox.setPrefHeight(950);
+        buttonsBox.setPrefWidth(950);
+        buttonsBox.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
+
+        vbox.getChildren().clear();
+        vbox.getChildren().add(buttonsBox);
+        vbox.setAlignment(Pos.CENTER);
+
+    }
+
+    public void showMySettings() {
         GridPane inputParameters = new GridPane();
         inputParameters.setAlignment(Pos.CENTER);
         inputParameters.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
@@ -210,8 +260,53 @@ public class App extends Application {
         variantsBox.setAlignment(Pos.CENTER);
         variantsBox.setSpacing(117);
 
-        Button startButton = new Button("Start simulation");
+
         Button predefinedButton = new Button("Predefined settings");
+        predefinedButton.setFont(new Font("Arial", 20));
+        predefinedButton.setOnAction((event -> showPredefinedSettings()));
+
+        Button startButton = new Button("Start simulation");
+        startButton.setFont(new Font("Arial", 20));
+        startButton.setOnAction((event -> {
+            this.heightWorldParameter = Integer.parseInt(heightWorld.getText());
+            this.widthWorldParameter = Integer.parseInt(widthWorld.getText());
+            this.initialNumberOfPlantsParameter = Integer.parseInt(initialNumberOfPlants.getText());
+            this.plantEnergyParameter = Integer.parseInt(plantEnergy.getText());
+            this.numberOfNewPlantsParameter = Integer.parseInt(numberOfNewPlants.getText());
+            this.initialNumberOfAnimalsParameter = Integer.parseInt(initialNumberOfAnimals.getText());
+            this.startAnimalEnergyParameter = Integer.parseInt(startAnimalEnergy.getText());
+            this.minEnergyToReproductionParameter = Integer.parseInt(minEnergyToReproduction.getText());
+            this.energyUsedToReproductionParameter = Integer.parseInt(energyUsedToReproduction.getText());
+            this.minNumberOfMutationsParameter = Integer.parseInt(minNumberOfMutations.getText());
+            this.maxNumberOfMutationsParameter = Integer.parseInt(maxNumberOfMutations.getText());
+            this.DNAlengthParameter = Integer.parseInt(DNAlength.getText());
+            if (mapVariant.getValue() == "Globe")
+                this.mapVariantParameter = false;
+            else
+                this.mapVariantParameter = true;
+            if (grassVariant.getValue() == "Green Equators")
+                this.grassVariantParameter = false;
+            else
+                this.grassVariantParameter = true;
+            if (mutationVariant.getValue() == "Randomness")
+                this.mutationVariantParameter = false;
+            else
+                this.mutationVariantParameter = true;
+            if (behaviourVariant.getValue() == "In order")
+                this.behaviourVariantParameter = false;
+            else
+                this.behaviourVariantParameter = true;
+
+            InputParameters input = new InputParameters(heightWorldParameter, widthWorldParameter, initialNumberOfPlantsParameter, plantEnergyParameter, numberOfNewPlantsParameter, initialNumberOfAnimalsParameter, startAnimalEnergyParameter, minEnergyToReproductionParameter, energyUsedToReproductionParameter, minNumberOfMutationsParameter, maxNumberOfMutationsParameter, DNAlengthParameter, mapVariantParameter, grassVariantParameter, mutationVariantParameter, behaviourVariantParameter);
+            try{
+                input.checkConditions();
+            }catch(Exception e){
+                showException(e);
+            }
+            showSimulationScene(input);
+
+        }));
+
         HBox buttonsBox = new HBox(predefinedButton, startButton);
         buttonsBox.setAlignment(Pos.CENTER);
         buttonsBox.setSpacing(100);
@@ -232,14 +327,96 @@ public class App extends Application {
         inputBox.setSpacing(20);
 
         inputParameters.getChildren().add(inputBox);
-
-
         vbox.getChildren().clear();
         vbox.getChildren().add(inputParameters);
         vbox.setAlignment(Pos.CENTER);
-
     }
 
+    public void showPredefinedSettings(){
+        GridPane inputParameters = new GridPane();
+        inputParameters.setAlignment(Pos.CENTER);
+        inputParameters.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
+        inputParameters.setPrefWidth(950);
+        inputParameters.setPrefHeight(950);
+        ChoiceBox<String> preSettings = new ChoiceBox<>();
+        preSettings.getItems().addAll("option 1", "option 2");
+        preSettings.setPrefWidth(300);
+
+        Button mySettings = new Button("My settings");
+        mySettings.setFont(new Font("Arial", 30));
+        mySettings.setOnAction((event -> showMySettings()));
+
+        Button startButton = new Button("Start simulation");
+        startButton.setFont(new Font("Arial", 30));
+        startButton.setOnAction((event -> {
+            Scanner scan;
+            String[] tab = new String[16];
+            if (preSettings.getValue() == "option 1"){
+                try {
+                    scan = new Scanner(new File("src/main/resources/ps1.txt"));
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                int i = 0;
+                while (scan.hasNextLine()) {
+                    String[] param= scan.nextLine().split(" ");
+                    tab[i] = param[1];
+                    i += 1;
+                }
+            }
+            else if(preSettings.getValue() == "option 2"){
+                try {
+                    scan = new Scanner(new File("src/main/resources/ps2.txt"));
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+                int i = 0;
+                while (scan.hasNextLine()) {
+                    String[] param = scan.nextLine().split(" ");
+                    tab[i] = param[1];
+                    i += 1;
+                }
+            }
+            for(int i=0; i<16; i++){
+                System.out.println(tab[i]);
+            }
+            InputParameters input = new InputParameters(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), Integer.parseInt(tab[2]), Integer.parseInt(tab[3]), Integer.parseInt(tab[4]), Integer.parseInt(tab[5]), Integer.parseInt(tab[6]), Integer.parseInt(tab[7]), Integer.parseInt(tab[8]), Integer.parseInt(tab[9]), Integer.parseInt(tab[10]), Integer.parseInt(tab[11]), Boolean.parseBoolean(tab[12]), Boolean.parseBoolean(tab[13]), Boolean.parseBoolean(tab[14]), Boolean.parseBoolean(tab[15]));
+            showSimulationScene(input);
+        }));
+
+
+        HBox buttonsBox = new HBox(mySettings, startButton);
+        buttonsBox.setAlignment(Pos.CENTER);
+        buttonsBox.setSpacing(100);
+
+        VBox inputBox = new VBox(
+                preSettings,
+                buttonsBox);
+
+        inputBox.setAlignment(Pos.CENTER);
+        inputBox.setSpacing(100);
+        inputParameters.getChildren().add(inputBox);
+        vbox.getChildren().clear();
+        vbox.getChildren().add(inputParameters);
+        vbox.setAlignment(Pos.CENTER);
+    }
+
+    public void showException(Exception e) {
+        e.printStackTrace();
+        Label exceptionText = new Label(e.toString());
+        VBox exceptionBox = new VBox(exceptionText);
+        exceptionBox.setPrefHeight(100);
+        exceptionBox.setPrefWidth(500);
+        exceptionBox.setAlignment(Pos.CENTER);
+        Stage stage = new Stage();
+        stage.setTitle("Wrong value");
+        stage.setScene(new Scene(exceptionBox, 500, 100));
+        stage.show();
+    }
+
+    public void showSimulationScene(InputParameters inputParameters) {
+        
+    }
 
 
 }
