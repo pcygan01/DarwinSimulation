@@ -2,7 +2,6 @@ package agh.ics.oop.gui;
 
 import agh.ics.oop.*;
 import javafx.application.Application;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -19,14 +18,11 @@ import javafx.scene.control.Label;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.security.KeyStore;
-import java.util.List;
 import java.util.Scanner;
 
 
 public class App extends Application {
     private final VBox vbox = new VBox();
-
     private int heightWorldParameter; // wysokość mapy
     private int widthWorldParameter; // szerokość mapy
 
@@ -115,12 +111,6 @@ public class App extends Application {
     }
 
     public void showMySettings() {
-        GridPane inputParameters = new GridPane();
-        inputParameters.setAlignment(Pos.CENTER);
-        inputParameters.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
-        inputParameters.setPrefWidth(950);
-        inputParameters.setPrefHeight(950);
-
         TextField heightWorld = new TextField();
         TextField widthWorld = new TextField();
         TextField initialNumberOfPlants = new TextField();
@@ -136,19 +126,19 @@ public class App extends Application {
 
         ChoiceBox<String> mapVariant = new ChoiceBox<>();
         mapVariant.getItems().addAll("Globe", "Hell Portal");
-        mapVariant.setPrefWidth(150);
+        mapVariant.setPrefWidth(170);
 
         ChoiceBox<String> grassVariant = new ChoiceBox<>();
         grassVariant.getItems().addAll("Green Equators", "Toxic Corpses");
-        grassVariant.setPrefWidth(150);
+        grassVariant.setPrefWidth(170);
 
         ChoiceBox<String> mutationVariant = new ChoiceBox<>();
         mutationVariant.getItems().addAll("Randomness", "Correction");
-        mutationVariant.setPrefWidth(150);
+        mutationVariant.setPrefWidth(170);
 
         ChoiceBox<String> behaviourVariant = new ChoiceBox<>();
         behaviourVariant.getItems().addAll("In order", "A bit of madness");
-        behaviourVariant.setPrefWidth(150);
+        behaviourVariant.setPrefWidth(170);
 
         Label heightWorldLabel = new Label("Map height: ");
         heightWorldLabel.setFont(new Font("Arial", 20));
@@ -247,20 +237,6 @@ public class App extends Application {
                 behaviourVariant);
         variantsTextBox.setSpacing(10);
 
-        HBox mapBox = new HBox(mapLabelBox, mapTextBox);
-        mapBox.setAlignment(Pos.CENTER);
-        mapBox.setSpacing(202);
-        HBox plantsBox = new HBox(plantsLabelBox, plantsTextBox);
-        plantsBox.setAlignment(Pos.CENTER);
-        plantsBox.setSpacing(23);
-        HBox animalsBox = new HBox(animalsLabelBox, animalsTextBox);
-        animalsBox.setAlignment(Pos.CENTER);
-        animalsBox.setSpacing(20);
-        HBox variantsBox = new HBox(variantsLabelBox, variantsTextBox);
-        variantsBox.setAlignment(Pos.CENTER);
-        variantsBox.setSpacing(117);
-
-
         Button predefinedButton = new Button("Predefined settings");
         predefinedButton.setFont(new Font("Arial", 20));
         predefinedButton.setOnAction((event -> showPredefinedSettings()));
@@ -297,13 +273,13 @@ public class App extends Application {
             else
                 this.behaviourVariantParameter = true;
 
-            InputParameters input = new InputParameters(heightWorldParameter, widthWorldParameter, initialNumberOfPlantsParameter, plantEnergyParameter, numberOfNewPlantsParameter, initialNumberOfAnimalsParameter, startAnimalEnergyParameter, minEnergyToReproductionParameter, energyUsedToReproductionParameter, minNumberOfMutationsParameter, maxNumberOfMutationsParameter, DNAlengthParameter, mapVariantParameter, grassVariantParameter, mutationVariantParameter, behaviourVariantParameter);
+            InputParameters inputParameters = new InputParameters(heightWorldParameter, widthWorldParameter, initialNumberOfPlantsParameter, plantEnergyParameter, numberOfNewPlantsParameter, initialNumberOfAnimalsParameter, startAnimalEnergyParameter, minEnergyToReproductionParameter, energyUsedToReproductionParameter, minNumberOfMutationsParameter, maxNumberOfMutationsParameter, DNAlengthParameter, mapVariantParameter, grassVariantParameter, mutationVariantParameter, behaviourVariantParameter);
             try{
-                input.checkConditions();
+                inputParameters.checkConditions();
             }catch(Exception e){
                 showException(e);
             }
-            showSimulationScene(input);
+            //showSimulationScene(inputParameters);
 
         }));
 
@@ -311,33 +287,36 @@ public class App extends Application {
         buttonsBox.setAlignment(Pos.CENTER);
         buttonsBox.setSpacing(100);
 
-        VBox inputBox = new VBox(
-                mapSettingsLabel,
-                mapBox,
-                plantsSettingsLabel,
-                plantsBox,
-                animalsSettingsLabel,
-                animalsBox,
-                variantsSettingsLabel,
-                variantsBox,
-                buttonsBox);
 
+        GridPane inputGrid = new GridPane();
+        inputGrid.setAlignment(Pos.CENTER);
+        inputGrid.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
+        inputGrid.setPrefHeight(950);
+        inputGrid.setPrefWidth(950);
+        inputGrid.setVgap(25);
+        inputGrid.setHgap(50);
 
-        inputBox.setAlignment(Pos.CENTER);
-        inputBox.setSpacing(20);
+        inputGrid.add(mapSettingsLabel,0,0);
+        inputGrid.add(mapLabelBox, 0,1);
+        inputGrid.add(mapTextBox,1,1);
+        inputGrid.add(plantsSettingsLabel, 0, 2);
+        inputGrid.add(plantsLabelBox, 0, 3);
+        inputGrid.add(plantsTextBox, 1, 3);
+        inputGrid.add(animalsSettingsLabel, 0, 4);
+        inputGrid.add(animalsLabelBox, 0, 5);
+        inputGrid.add(animalsTextBox, 1, 5);
+        inputGrid.add(variantsSettingsLabel,0,6);
+        inputGrid.add(variantsLabelBox, 0, 7);
+        inputGrid.add(variantsTextBox, 1, 7);
+        inputGrid.add(predefinedButton, 0, 8);
+        inputGrid.add(startButton, 1, 8);
 
-        inputParameters.getChildren().add(inputBox);
         vbox.getChildren().clear();
-        vbox.getChildren().add(inputParameters);
+        vbox.getChildren().add(inputGrid);
         vbox.setAlignment(Pos.CENTER);
     }
 
     public void showPredefinedSettings(){
-        GridPane inputParameters = new GridPane();
-        inputParameters.setAlignment(Pos.CENTER);
-        inputParameters.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
-        inputParameters.setPrefWidth(950);
-        inputParameters.setPrefHeight(950);
         ChoiceBox<String> preSettings = new ChoiceBox<>();
         preSettings.getItems().addAll("option 1", "option 2");
         preSettings.setPrefWidth(300);
@@ -377,11 +356,8 @@ public class App extends Application {
                     i += 1;
                 }
             }
-            for(int i=0; i<16; i++){
-                System.out.println(tab[i]);
-            }
-            InputParameters input = new InputParameters(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), Integer.parseInt(tab[2]), Integer.parseInt(tab[3]), Integer.parseInt(tab[4]), Integer.parseInt(tab[5]), Integer.parseInt(tab[6]), Integer.parseInt(tab[7]), Integer.parseInt(tab[8]), Integer.parseInt(tab[9]), Integer.parseInt(tab[10]), Integer.parseInt(tab[11]), Boolean.parseBoolean(tab[12]), Boolean.parseBoolean(tab[13]), Boolean.parseBoolean(tab[14]), Boolean.parseBoolean(tab[15]));
-            showSimulationScene(input);
+            InputParameters inputParameters = new InputParameters(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), Integer.parseInt(tab[2]), Integer.parseInt(tab[3]), Integer.parseInt(tab[4]), Integer.parseInt(tab[5]), Integer.parseInt(tab[6]), Integer.parseInt(tab[7]), Integer.parseInt(tab[8]), Integer.parseInt(tab[9]), Integer.parseInt(tab[10]), Integer.parseInt(tab[11]), Boolean.parseBoolean(tab[12]), Boolean.parseBoolean(tab[13]), Boolean.parseBoolean(tab[14]), Boolean.parseBoolean(tab[15]));
+            //showSimulationScene(inputParameters);
         }));
 
 
@@ -392,12 +368,14 @@ public class App extends Application {
         VBox inputBox = new VBox(
                 preSettings,
                 buttonsBox);
+        inputBox.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
+        inputBox.setPrefHeight(950);
+        inputBox.setPrefWidth(950);
 
         inputBox.setAlignment(Pos.CENTER);
         inputBox.setSpacing(100);
-        inputParameters.getChildren().add(inputBox);
         vbox.getChildren().clear();
-        vbox.getChildren().add(inputParameters);
+        vbox.getChildren().add(inputBox);
         vbox.setAlignment(Pos.CENTER);
     }
 
@@ -413,10 +391,76 @@ public class App extends Application {
         stage.setScene(new Scene(exceptionBox, 500, 100));
         stage.show();
     }
-
+    /*
     public void showSimulationScene(InputParameters inputParameters) {
-        
+        GridPane grid = new GridPane();
+
+
+        GridPane map = createMap(grid, engine);
+
+        VBox statistics = createStatistics(engine);
+
+    }
+
+    private GridPane createMap( SimulationEngine engine, InputParameters inputParameters){
+        GridPane gridPane = new GridPane();
+        gridPane.setBackground(new Background(new BackgroundFill(Color.web("#CAE7D2"), CornerRadii.EMPTY, Insets.EMPTY));
+        int numberOfColumns = inputParameters.getWidthWorld();
+        int numberOfRows = inputParameters.getHeightWorld();
+        double height = (double) 500 / numberOfRows;
+        double width = (double) 500 / numberOfColumns;
+
+        for (int i=0; i<numberOfColumns; i++){
+            ColumnConstraints columnConstraints = new ColumnConstraints(width);
+            columnConstraints.setPercentWidth(100.0 / numberOfColumns);
+            gridPane.getColumnConstraints().add(columnConstraints);
+        }
+
+        for (int i=0; i<numberOfRows; i++){
+            RowConstraints rowConstraints = new RowConstraints(height);
+            rowConstraints.setPercentHeight(100.0 / numberOfColumns);
+            gridPane.getRowConstraints().add(rowConstraints);
+        }
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+
+            }
+        }
+
+        return gridPane;
+
     }
 
 
+    private VBox createStatistics(SimulationEngine engine){
+        double averageEnergy = 0;
+        for(Animal animal: map.liveAnimals){
+            averageEnergy+=animal.getEnergy();
+        }
+        if(map.liveAnimals.size() > 0){
+            averageEnery /= map.liveAnimals.size();
+        }
+
+        Label averageEnergyLabel = new Label("Avarage energy: " + averageEnergy);
+        HBox averageEnergyBox = new HBox(averageEnergyLabel);
+
+        double averageLife = 0;
+        for(Animal animal: map.deadAnimals){
+            averageLife+=animal.getAge();
+        }
+        if(map.deadAnimals.size() > 0){
+            averageLife /= map.deadAnimals.size();
+        }
+
+        Label averageLifeLabel = new Label("Avarage length of life: " + averageLife);
+        HBox averageLifeBox = new HBox(averageLifeLabel);
+
+
+
+
+        VBox statsBox = new VBox(popularGenomesBox, averageEnergyBox, averageLifeBox);
+
+    }
+*/
 }
