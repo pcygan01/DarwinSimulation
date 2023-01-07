@@ -1,4 +1,5 @@
 package agh.ics.oop;
+import java.sql.SQLOutput;
 import java.util.*;
 
 import static java.lang.Math.*;
@@ -50,6 +51,9 @@ public class GrassField implements IPositionChangeObserver{
         this.sortedVectors = new ArrayList<>();
         this.jungleSizeIfGT1 = (int) Math.ceil(height*width/5.0);
 
+        if (grassesType){
+            initializeVectors();
+        }
         for(int i = 0; i < n; i++){
             while (true)
                 if (spawnGrass())
@@ -72,12 +76,9 @@ public class GrassField implements IPositionChangeObserver{
     }
 
     public Object objectAt(Vector2d position){
-        if (animals.get(position) == null)
+        if (animals.get(position) == null || animals.get(position).size() == 0)
             return grasses.get(position);
-        if (animals.get(position).size() == 0)
-            return grasses.get(position);
-        //TODO:
-        //return getBestAnimal(position);
+        return getAnimalWhoEats(position);
     }
 
 
@@ -105,11 +106,14 @@ public class GrassField implements IPositionChangeObserver{
         Random random = new Random();
         int rInt = random.nextInt(10);
         if (!grassesType){ //rownik
-            if(grassesInJungle < jungleSize && (rInt == 8 || rInt == 9)) {
+            if(grassesInJungle < jungleSize && (rInt != 8 && rInt != 9)) {
                 while(true){
                     Vector2d pos = new Vector2d(random.nextInt(this.upperRight.x + 1), random.nextInt(jungleHeight) + jungleBottom);
                     if (grasses.get(pos) == null) {
                         this.grasses.put(pos, new Grass(pos));
+                        grassesInJungle+=1;
+                        System.out.println("DZUNGLA" + grassesInJungle + " " + jungleSize);
+                        System.out.println("wymiary" + jungleBottom + " " + jungleHeight);
                         return true;
                     }
                 }
@@ -121,7 +125,7 @@ public class GrassField implements IPositionChangeObserver{
                     if(randomY >= jungleBottom){
                         randomY += jungleHeight;
                     }
-                    Vector2d pos = new Vector2d(random.nextInt(random.nextInt(this.upperRight.x + 1)), randomY);
+                    Vector2d pos = new Vector2d(random.nextInt(this.upperRight.x + 1), randomY);
                     if (grasses.get(pos) == null) {
                         this.grasses.put(pos, new Grass(pos));
                         return true;
@@ -162,6 +166,16 @@ public class GrassField implements IPositionChangeObserver{
             return false;
         }
     }
+    public void deleteGrassAtPos(Vector2d pos){
+        if(!grassesType){ //rownik
+            if(pos.y >= jungleBottom && pos.y < jungleBottom + jungleHeight){
+                grassesInJungle -=1;
+            }
+        }
+        //tez dla truposzy
+        this.grasses.remove(pos);
+
+    }
 
     public void initializeVectors(){
         for(int i = 0; i <= this.upperRight.x; i++){
@@ -183,7 +197,65 @@ public class GrassField implements IPositionChangeObserver{
         return new MapVisualizer(this).draw(getLowerLeft(), getUpperRight());
     }
 
+    public Animal getAnimalWhoEats(Vector2d pos){
+        if(this.animals.get(pos) == null || this.animals.get(pos).size() == 0){
+            return null;
+        }
+        List<Animal> rivals = new ArrayList<>();
+        int bestEnergy = -10000;
+        for(Animal a: animals.get(pos)){ //z najwieksza energia
+            if(a.getEnergy() == bestEnergy){
+                rivals.add(a);
+            }
+            else if(a.getEnergy() > bestEnergy){
+                bestEnergy = a.getEnergy();
+                rivals.clear();
+                rivals.add(a);
+            }
+        }
+        if(rivals.size() == 1){
+            System.out.println("HALO SIEMA");
+            return rivals.get(0);
+        }
+        //z najwieksza iloscia dzieci
+        List<Animal> rivalsKids = new ArrayList<>();
+        int mostKids = 0;
+        for(Animal a: rivals){
+            if(a.getChildrenAmount() == mostKids){
+                rivalsKids.add(a);
+            }
+            else if(a.getChildrenAmount() > mostKids){
+                mostKids = a.getChildrenAmount();
+                rivalsKids.clear();
+                rivalsKids.add(a);
+            }
+        }
+        return rivalsKids.get(0); //bierzemy z najwieksza iloscia dzieci, a jesli ma wiecej to losowo pierwszego z lewej
+    }
 
+    public List<Animal> getParentsAtPos(Vector2d pos){
+        return null;
+    }
+    public void removeAnimal(Animal a){
+        List<Animal> animalsWhereA = this.animals.get(a.getPosition());
+        animalsWhereA.remove(a);
+        a.getPosition().incrementDeadAnimals();
+    }
+    public Grass getGrassAt(Vector2d pos){
+        return this.grasses.get(pos);
+    }
+
+    public int getEnergyFromPlant(){
+        return energyFromPlant;
+    }
+
+    public int getGrassesMoreEachDay() {
+        return grassesMoreEachDay;
+    }
+
+    public boolean isOccupied(Vector2d pos){
+        return this.objectAt(pos) != null;
+    }
 //    public String toString(){
 //        return super.toString();
 //    }

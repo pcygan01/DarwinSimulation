@@ -54,6 +54,9 @@ public class Vector2d {
     public int getDeadAnimals() {
         return deadAnimals;
     }
+    public void incrementDeadAnimals(){
+        this.deadAnimals += 1;
+    }
 
     @Override
     public boolean equals(Object o) {
