@@ -47,6 +47,12 @@ public class Animal extends AbstractWorldMapElement{
         return direction;
     }
 
+    public void addObserver(IPositionChangeObserver observer){
+        observers.add(observer);
+    }
+    public void removeObserver(IPositionChangeObserver observer){
+        observers.remove(observer);
+    }
     public void positionChanged(Vector2d newPosition){
         for(IPositionChangeObserver observer: observers){
             observer.positionChanged(this, this.position, newPosition);
@@ -82,10 +88,23 @@ public class Animal extends AbstractWorldMapElement{
         }
         if(moved){
             if (this.map.canMoveTo(newPos)){ //chyba zwykle move no bo moze
+                System.out.println("moved to " + newPos);
+                //this.position = newPos;
                 positionChanged(newPos);
             }
         }
 
+    }
+
+
+    public void addEnergy(int energyToAdd){
+        this.energy += energyToAdd;
+    }
+    public int getChildrenAmount(){
+        return childrenAmount;
+    }
+    public int getEnergy(){
+        return energy;
     }
 
 }
