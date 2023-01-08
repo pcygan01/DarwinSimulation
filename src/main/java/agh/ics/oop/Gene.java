@@ -114,5 +114,9 @@ public class Gene {
         int rInt = r.nextInt(n);
     }
 
+    public int getMoveNumber(){
+        return moveNumber;
+    }
+
 
 }

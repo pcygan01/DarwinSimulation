@@ -21,6 +21,7 @@ public class Animal extends AbstractWorldMapElement{
     private final boolean behaviorType; //0 - pełna predestynacja, 1 - nieco szaleństwa
 
     private final int energyToReproduce;
+    private int plantsEaten;
 
     //at start
     public Animal(GrassField map, Vector2d initialPosition, int energy, boolean behaviorType, int genesLength, int energyToReproduce){
@@ -36,6 +37,8 @@ public class Animal extends AbstractWorldMapElement{
         this.daysLived = 0;
         this.behaviorType = behaviorType;
         this.energyToReproduce = energyToReproduce;
+        this.plantsEaten = 0;
+
     }
 
     //kid
@@ -52,6 +55,7 @@ public class Animal extends AbstractWorldMapElement{
         this.daysLived = 0;
         this.behaviorType = behaviorType;
         this.energyToReproduce = energyToReproduce;
+        this.plantsEaten = 0;
 
     }
     public String toString(){
@@ -133,6 +137,10 @@ public class Animal extends AbstractWorldMapElement{
     }
     public boolean getBehaviorType(){
         return this.behaviorType;
+    }
+
+    public void eatPlant(){
+        this.plantsEaten+=1;
     }
 
 }

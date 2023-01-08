@@ -247,6 +247,9 @@ public class GrassField implements IPositionChangeObserver{
 //    }
 
 
+    public int getGrassesCount(){
+        return this.grasses.size();
+    }
 
 
 

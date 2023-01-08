@@ -61,6 +61,7 @@ public class SimulationEngine implements IEngine{
                 this.map.deleteGrassAtPos(a.getPosition());
                 Animal an = this.map.getAnimalWhoEats(a.getPosition());
                 an.addEnergy(this.map.getEnergyFromPlant());
+                an.eatPlant();
             }
         }
     }
@@ -137,4 +138,39 @@ public class SimulationEngine implements IEngine{
     public ArrayList<Animal> getAnimals(){
         return animals;
     }
+
+    //for statistics:
+
+    public int allAnimalsCount(){
+        return this.animals.size();
+    }
+    public int allGrassesCount(){
+        return this.map.getGrassesCount();
+    }
+
+    public double getAverageEnergy(){
+        int sum = 0;
+        for(Animal a: this.animals){
+            sum += a.getEnergy();
+        }
+        return (sum*1.0)/allAnimalsCount();
+    }
+    public double getAverageLifeSpan(){ //(for dead animals)
+        int sum = 0;
+        for(Animal a: this.deadAnimals){
+            sum += a.getDaysLived();
+        }
+        return (sum*1.0)/this.deadAnimals.size();
+
+    }
+
+    //TODO:
+    public int getFreeFieldsCount(){
+        return 0;
+    }
+    public int[] getMostPopularGenes(){ //chyba int[] bedzie najlepiej
+        return null;
+    }
+
+    //dla animal statistics mozna chyba brac z animala
 }
