@@ -18,13 +18,14 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 
-public class App extends Application implements IMapChangeObserver{
+public class App extends Application implements IMapChangeObserver {
     private final VBox vbox = new VBox();
     static GridPane gridPane = new GridPane();
     private int heightWorldParameter; // wysokość mapy
@@ -49,14 +50,8 @@ public class App extends Application implements IMapChangeObserver{
     private boolean grassVariantParameter; // false - zalesione równiki, true - toksyczne trupy
     private boolean mutationVariantParameter; // false - pełna losowość, true - lekka korekta
     private boolean behaviourVariantParameter; // false - pełna predystancja, true - nieco szaleństwa
-/*
-    private final StatisticsGraph animals = new StatisticsGraph("Animals");
-    private final StatisticsGraph plants = new StatisticsGraph("Plants");
-    private final StatisticsGraph emptyFields = new StatisticsGraph("Empty fields");
-    private final StatisticsGraph averageEnergy = new StatisticsGraph("Average energy level");
-    private final StatisticsGraph averageLife = new StatisticsGraph("Average lifespan of animals");*/
 
-
+    //public static Animal trackedAnimal;
 
     public static void main(String[] args) {
         Application.launch(App.class);
@@ -286,9 +281,9 @@ public class App extends Application implements IMapChangeObserver{
                 this.behaviourVariantParameter = true;
 
             InputParameters inputParameters = new InputParameters(heightWorldParameter, widthWorldParameter, initialNumberOfPlantsParameter, plantEnergyParameter, numberOfNewPlantsParameter, initialNumberOfAnimalsParameter, startAnimalEnergyParameter, minEnergyToReproductionParameter, energyUsedToReproductionParameter, minNumberOfMutationsParameter, maxNumberOfMutationsParameter, DNAlengthParameter, mapVariantParameter, grassVariantParameter, mutationVariantParameter, behaviourVariantParameter);
-            try{
+            try {
                 inputParameters.checkConditions();
-            }catch(Exception e){
+            } catch (Exception e) {
                 showException(e);
             }
             try {
@@ -312,16 +307,16 @@ public class App extends Application implements IMapChangeObserver{
         inputGrid.setVgap(25);
         inputGrid.setHgap(50);
 
-        inputGrid.add(mapSettingsLabel,0,0);
-        inputGrid.add(mapLabelBox, 0,1);
-        inputGrid.add(mapTextBox,1,1);
+        inputGrid.add(mapSettingsLabel, 0, 0);
+        inputGrid.add(mapLabelBox, 0, 1);
+        inputGrid.add(mapTextBox, 1, 1);
         inputGrid.add(plantsSettingsLabel, 0, 2);
         inputGrid.add(plantsLabelBox, 0, 3);
         inputGrid.add(plantsTextBox, 1, 3);
         inputGrid.add(animalsSettingsLabel, 0, 4);
         inputGrid.add(animalsLabelBox, 0, 5);
         inputGrid.add(animalsTextBox, 1, 5);
-        inputGrid.add(variantsSettingsLabel,0,6);
+        inputGrid.add(variantsSettingsLabel, 0, 6);
         inputGrid.add(variantsLabelBox, 0, 7);
         inputGrid.add(variantsTextBox, 1, 7);
         inputGrid.add(predefinedButton, 0, 8);
@@ -332,7 +327,7 @@ public class App extends Application implements IMapChangeObserver{
         vbox.setAlignment(Pos.CENTER);
     }
 
-    public void showPredefinedSettings(){
+    public void showPredefinedSettings() {
         ChoiceBox<String> preSettings = new ChoiceBox<>();
         preSettings.getItems().addAll("option 1", "option 2");
         preSettings.setPrefWidth(300);
@@ -346,7 +341,7 @@ public class App extends Application implements IMapChangeObserver{
         startButton.setOnAction((event -> {
             Scanner scan;
             String[] tab = new String[16];
-            if (preSettings.getValue() == "option 1"){
+            if (preSettings.getValue() == "option 1") {
                 try {
                     scan = new Scanner(new File("src/main/resources/ps1.txt"));
                 } catch (FileNotFoundException e) {
@@ -354,12 +349,11 @@ public class App extends Application implements IMapChangeObserver{
                 }
                 int i = 0;
                 while (scan.hasNextLine()) {
-                    String[] param= scan.nextLine().split(" ");
+                    String[] param = scan.nextLine().split(" ");
                     tab[i] = param[1];
                     i += 1;
                 }
-            }
-            else if(preSettings.getValue() == "option 2"){
+            } else if (preSettings.getValue() == "option 2") {
                 try {
                     scan = new Scanner(new File("src/main/resources/ps2.txt"));
                 } catch (FileNotFoundException e) {
@@ -417,51 +411,79 @@ public class App extends Application implements IMapChangeObserver{
 
         GridPane grid = new GridPane();
         GridPane worldMap = new GridPane();
-        worldMap.setPrefWidth(700);
-        worldMap.setPrefHeight(700);
+        worldMap.setPrefWidth(600);
+        worldMap.setPrefHeight(600);
+
+        VBox statsBox = new VBox();
+        statsBox.setPrefWidth(300);
+        statsBox.setPrefHeight(800);
+
+        VBox animalBox = new VBox();
+        animalBox.setPrefWidth(500);
+        animalBox.setPrefHeight(250);
+
+        Button startButton = new Button("Start");
+        Button stopButton = new Button("Stop");
+        HBox buttons = new HBox(20, startButton, stopButton);
+
+
+
+
+        StatisticsChart animalsChart = new StatisticsChart("Number of animals");
+        StatisticsChart plantsChart = new StatisticsChart("Number of plants");
+        StatisticsChart emptyFieldsChart = new StatisticsChart("Number of empty fields");
+        StatisticsChart averageEnergyChart = new StatisticsChart("Average energy level");
+        StatisticsChart averageLifespanChart = new StatisticsChart("Average lifespan of animals");
+        StatisticsChart[] statisticsCharts = {animalsChart, plantsChart, emptyFieldsChart, averageEnergyChart, averageLifespanChart};
+
         grid.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
         GrassField map = new GrassField(inputParameters.initialNumberOfPlants, inputParameters.heightWorld, inputParameters.widthWorld, inputParameters.mapVariant, inputParameters.plantEnergy, inputParameters.grassVariant, inputParameters.numberOfNewPlants, worldMap);
-        SimulationEngine engine = new SimulationEngine(this, map,300, inputParameters.initialNumberOfAnimals, inputParameters.startAnimalEnergy, inputParameters.minEnergyToReproduction, inputParameters.energyUsedToReproduction,inputParameters.minNumberOfMutations, inputParameters.maxNumberOfMutations, inputParameters.DNAlength, inputParameters.mutationVariant, inputParameters.behaviourVariant);
-        createMap(map, worldMap);
+        SimulationEngine engine = new SimulationEngine(this, map, statsBox, statisticsCharts, animalBox, 500, inputParameters.initialNumberOfAnimals, inputParameters.startAnimalEnergy, inputParameters.minEnergyToReproduction, inputParameters.energyUsedToReproduction, inputParameters.minNumberOfMutations, inputParameters.maxNumberOfMutations, inputParameters.DNAlength, inputParameters.mutationVariant, inputParameters.behaviourVariant);
 
-        Thread engineThread  = new Thread(engine);
+        createMap(map, engine, worldMap, null);
+        createStatistics(statisticsCharts, statsBox, engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan());
+
+        Thread engineThread = new Thread(engine);
         engineThread.start();
 
+        stopButton.setOnAction(event ->{
+
+        });
+
+
+
+        VBox leftBox = new VBox(15, worldMap, buttons, animalBox);
+        leftBox.setAlignment(Pos.CENTER);
+
         grid.getChildren().clear();
-        grid.getChildren().add(worldMap);
-        Scene scene = new Scene(grid,950, 950, Color.web("#81c483"));
+        grid.add(leftBox, 0, 0);
+        grid.add(statsBox, 1, 0);
+        grid.setHgap(20);
+
+
+        Scene scene = new Scene(grid, 950, 950, Color.web("#81c483"));
         stage.setScene(scene);
         stage.setTitle("Darwin Simulation");
         stage.show();
 
-
-        //animals.makeGraph();
-        //plants.makeGraph();
-        //emptyFields.makeGraph();
-        //averageEnergy.makeGraph();
-        //averageLife.makeGraph();
-        //VBox statsBox = createStatistics(map, engine);
-
-
-
     }
 
-    public static void createMap(GrassField map, GridPane grid) throws FileNotFoundException {
+    public static void createMap(GrassField map, SimulationEngine engine, GridPane grid, Animal trackedAnimal) throws FileNotFoundException {
         GridPane gridPane = new GridPane();
         gridPane.getChildren().clear();
         gridPane.setBackground(new Background(new BackgroundFill(Color.web("#CAE7D2"), CornerRadii.EMPTY, Insets.EMPTY)));
-        int numberOfRows = map.getUpperRight().y+1;
-        int numberOfColumns = map.getUpperRight().x+1;
-        double height = (double) 700 / numberOfRows;
-        double width = (double) 700 / numberOfColumns;
+        int numberOfRows = map.getUpperRight().y + 1;
+        int numberOfColumns = map.getUpperRight().x + 1;
+        double height = (double) 600 / numberOfRows;
+        double width = (double) 600 / numberOfColumns;
 
-        for (int i=0; i<numberOfColumns; i++){
+        for (int i = 0; i < numberOfColumns; i++) {
             ColumnConstraints columnConstraints = new ColumnConstraints(width);
             columnConstraints.setPercentWidth(100.0 / numberOfColumns);
             gridPane.getColumnConstraints().add(columnConstraints);
         }
 
-        for (int i=0; i<numberOfRows; i++){
+        for (int i = 0; i < numberOfRows; i++) {
             RowConstraints rowConstraints = new RowConstraints(height);
             rowConstraints.setPercentHeight(100.0 / numberOfColumns);
             gridPane.getRowConstraints().add(rowConstraints);
@@ -471,37 +493,94 @@ public class App extends Application implements IMapChangeObserver{
             for (int y = 0; y < numberOfRows; y++) {
                 Vector2d pos = new Vector2d(x, y);
                 Object object = map.objectAt(pos);
-                if (map.isOccupied(pos)){
-                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width);
+                if (map.isOccupied(pos)) {
+                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, true);
                     gridPane.add(VBox.getBox(), pos.x, numberOfRows - pos.y - 1, 1, 1);
                 }
 
             }
         }
+
+        gridPane.setOnMouseClicked(event -> {
+            double mouseX = event.getX();
+            double mouseY = event.getY();
+            int row = (int) (mouseY / height);
+            int col = (int) (mouseX / width);
+            if (map.isOccupied(new Vector2d(col, row))) {
+                engine.setAnimalTracked(new Vector2d(col, row));
+            }
+        });
+
+
         grid.getChildren().clear();
         grid.getChildren().add(gridPane);
     }
 
 
-    /*private VBox createStatistics(GrassField map, SimulationEngine engine){
-        animals.updateAnimalsGraph(engine);
-        plants.updatePlantsGraph(engine, map);
-        emptyFields.updateEmptyFieldsGraph(engine, map);
-        averageEnergy.updateAverageEnergyGraph(engine);
-        averageLife.updateAverageLifeGraph(engine);
+    private void createStatistics(StatisticsChart[] statisticsCharts, VBox statsBox, int[] mostPopularGenes, int days, int numOfAnimals, int numOfGrasses, int numOfFreeFields, double averageEnergy, double averageLifespan) {
+        statsBox.getChildren().clear();
+        StatisticsChart animalsChart = statisticsCharts[0];
+        StatisticsChart plantsChart = statisticsCharts[1];
+        StatisticsChart emptyFieldsChart = statisticsCharts[2];
+        StatisticsChart averageEnergyChart = statisticsCharts[3];
+        StatisticsChart averageLifespanChart = statisticsCharts[4];
 
-        VBox statsBox = new VBox(animals.makeGraph(), plants.makeGraph(), emptyFields.makeGraph(), averageEnergy.makeGraph(), averageLife.makeGraph());
+        animalsChart.updateAnimalsChart(days, numOfAnimals);
+        plantsChart.updateGrassesChart(days, numOfGrasses);
+        emptyFieldsChart.updateFreeFieldsChart(days, numOfFreeFields);
+        averageEnergyChart.updateEnergyChart(days, averageEnergy);
+        averageLifespanChart.updateLifespanChart(days, averageLifespan);
+
+        statsBox.getChildren().add(animalsChart.getChart());
+        statsBox.getChildren().add(plantsChart.getChart());
+        statsBox.getChildren().add(emptyFieldsChart.getChart());
+        statsBox.getChildren().add(averageEnergyChart.getChart());
+        statsBox.getChildren().add(averageLifespanChart.getChart());
+        Label label = new Label("The most common genotypes");
+        label.setFont(new Font("Arial", 17));
+        statsBox.getChildren().add(label);
+        //statsBox.getChildren().add(new Label(""+mostPopularGenes[0]+"\n" + mostPopularGenes[1] +"\n" + mostPopularGenes[2]));
         statsBox.setAlignment(Pos.CENTER);
 
-        return statsBox;
-    }*/
+    }
 
+    private void createAnimalStats(VBox animalBox, SimulationEngine engine) {
+        Animal animal = engine.getTrackedAnimal();
+        Label genome = new Label("Genome: ");
+        Label activated = new Label("Activated part of the genome: ");
+        Label energy = new Label("Energy: ");
+        Label plantsEaten = new Label("Number of plants eaten: ");
+        Label numOfChildren = new Label("Number of children: ");
+        Label age = new Label("Age: ");
+        Label deathDay = new Label("Death day: ");
+
+        HBox genomeBox = new HBox(20, genome, new Label("" + animal.getGenes()));
+        //HBox activatedBox = new HBox(20, activated, new Label("" +animal.get))
+        HBox energyBox = new HBox(20, energy, new Label("" + animal.getEnergy()));
+        HBox plantsEatenBox = new HBox(20, plantsEaten, new Label("" + animal.getPlantsEaten()));
+        HBox numOfChildrenBox = new HBox(20, numOfChildren, new Label("" + animal.getChildrenAmount()));
+        HBox ageBox = new HBox(20, age, new Label("" + animal.getDaysLived()));
+        //HBox deathDayBox = new HBox(20, deathDay, new Label("" + animal.getDaysLived()));
+
+        animalBox.getChildren().clear();
+        animalBox.getChildren().add(genomeBox);
+        animalBox.getChildren().add(energyBox);
+        animalBox.getChildren().add(plantsEatenBox);
+        animalBox.getChildren().add(numOfChildrenBox);
+        animalBox.getChildren().add(ageBox);
+        animalBox.setSpacing(10);
+
+    }
 
     @Override
-    public void mapChanged(GrassField map, GridPane worldMap) {
+    public void mapChanged(SimulationEngine engine) {
         Platform.runLater(() -> {
             try {
-                createMap(map,worldMap);
+                createMap(engine.getMap(), engine, engine.getMap().getWorldMap(), engine.getTrackedAnimal());
+                createStatistics(engine.getStatisticsCharts(), engine.getStatsBox(), engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan());
+                if (engine.getTrackedAnimal() != null){
+                    createAnimalStats(engine.getAnimalBox(), engine);
+                }
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }

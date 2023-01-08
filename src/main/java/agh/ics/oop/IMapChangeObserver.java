@@ -1,7 +1,8 @@
 package agh.ics.oop;
 
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 
 public interface IMapChangeObserver {
-    void mapChanged(GrassField map, GridPane worldMap);
+    void mapChanged(SimulationEngine engine);
 }

@@ -14,7 +14,7 @@ import java.io.FileNotFoundException;
 public class GuiElementBox extends Node {
     private final VBox vbox;
 
-    public GuiElementBox(IMapElement object, double height, double width) throws FileNotFoundException {
+    public GuiElementBox(IMapElement object, double height, double width, boolean isTracked) throws FileNotFoundException {
         Image image = null;
         try {
             image = new Image(new FileInputStream(object.getPath()));
@@ -26,6 +26,10 @@ public class GuiElementBox extends Node {
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(width);
         imageView.setFitHeight(height);
+        if(isTracked){
+            imageView.setStyle("-fx-background-color: ORANGE");
+        }
+
         vbox = new VBox(imageView);
         vbox.setAlignment(Pos.CENTER);
     }

@@ -130,6 +130,10 @@ public class Animal extends AbstractWorldMapElement{
     public void addEnergy(int energyToAdd){
         this.energy += energyToAdd;
     }
+    public void addAge(){
+        this.daysLived += 1;
+    }
+
     public int getChildrenAmount(){
         return childrenAmount;
     }
@@ -146,6 +150,10 @@ public class Animal extends AbstractWorldMapElement{
 
     public void eatPlant(){
         this.plantsEaten+=1;
+    }
+
+    public int getPlantsEaten(){
+        return this.plantsEaten;
     }
 
 }

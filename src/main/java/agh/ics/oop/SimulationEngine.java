@@ -1,7 +1,8 @@
 package agh.ics.oop;
 
 import agh.ics.oop.gui.App;
-import javafx.scene.layout.GridPane;
+import agh.ics.oop.gui.StatisticsChart;
+import javafx.scene.layout.VBox;
 
 import java.util.*;
 
@@ -15,11 +16,19 @@ public class SimulationEngine implements IEngine, Runnable{
     private final int minMutation;
     private final int maxMutation;
     private final boolean mutationType;
+    private Animal trackedAnimal;
 
     private final LinkedList<IMapChangeObserver> observers;
+    private int days;
+
+    VBox statsBox;
+
+    VBox animalBox;
+
+    StatisticsChart[] statisticsCharts;
 
 
-    public SimulationEngine(App application, GrassField map, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType){
+    public SimulationEngine(App application, GrassField map, VBox statsBox, StatisticsChart[] statisticsCharts, VBox animalBox, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType){
         this.map = map;
         this.moveDelay = moveDelay;
         this.animals = new ArrayList<>();
@@ -37,6 +46,10 @@ public class SimulationEngine implements IEngine, Runnable{
         this.minMutation = minMutation;
         this.maxMutation = maxMutation;
         this.mutationType = mutationType;
+        this.days = 0;
+        this.statsBox = statsBox;
+        this.statisticsCharts = statisticsCharts;
+        this.animalBox = animalBox;
 
         this.observers = new LinkedList<>();
         addObserver(application);
@@ -111,7 +124,9 @@ public class SimulationEngine implements IEngine, Runnable{
     public void endDay(){
         for (Animal a: animals){
             a.addEnergy(-1);
+            a.addAge();
         }
+        this.days += 1;
     }
 
     public void liveDay(){
@@ -144,6 +159,13 @@ public class SimulationEngine implements IEngine, Runnable{
         }
     }
 
+
+
+
+    public void setAnimalTracked(Vector2d pos){
+        this.trackedAnimal =  this.map.getAnimalWhoEats(pos);
+    }
+
     public ArrayList<Animal> getAnimals(){
         return animals;
     }
@@ -153,6 +175,8 @@ public class SimulationEngine implements IEngine, Runnable{
     public int allAnimalsCount(){
         return this.animals.size();
     }
+
+    public int deadAnimalsCount() { return this.deadAnimals.size(); }
     public int allGrassesCount(){
         return this.map.getGrassesCount();
     }
@@ -169,16 +193,54 @@ public class SimulationEngine implements IEngine, Runnable{
         for(Animal a: this.deadAnimals){
             sum += a.getDaysLived();
         }
-        return (sum*1.0)/this.deadAnimals.size();
+        return (sum*1.0)/this.deadAnimalsCount();
 
     }
 
     //TODO:
     public int getFreeFieldsCount(){
-        return 0;
+        return (this.map.getUpperRight().x + 1)*(this.map.getUpperRight().y + 1) - this.allAnimalsCount() - this.allGrassesCount();
     }
     public int[] getMostPopularGenes(){ //chyba int[] bedzie najlepiej
+        /*Map<Gene, Integer> freq = new HashMap<Gene, Integer>();
+        for (Animal a: this.animals){
+            Integer count = freq.get(a.getGenes());
+            if (count == null) {
+                freq.put(a.getGenes(), 1);
+            }
+            else {
+                freq.put(a.getGenes(), count + 1);
+            }
+        }
+        int[] res;
+
+
+        return res;*/
         return null;
+    }
+
+
+    public int getDays(){
+        return this.days;
+    }
+
+    public VBox getStatsBox(){
+        return this.statsBox;
+    }
+
+    public GrassField getMap(){
+        return this.map;
+    }
+    public VBox getAnimalBox(){
+        return this.animalBox;
+    }
+
+    public Animal getTrackedAnimal(){
+        return this.trackedAnimal;
+    }
+
+    public StatisticsChart[] getStatisticsCharts(){
+        return this.statisticsCharts;
     }
 
     //dla animal statistics mozna chyba brac z animala
@@ -189,10 +251,10 @@ public class SimulationEngine implements IEngine, Runnable{
 
     public void update(){
         for (IMapChangeObserver observer: this.observers){
-            observer.mapChanged(this.map, this.map.getWorldMap());
+            observer.mapChanged(this);
         }
     }
     @Override
-    public void mapChanged(GrassField map, GridPane worldMap) throws Exception {
+    public void mapChanged(SimulationEngine engine) throws Exception {
     }
 }

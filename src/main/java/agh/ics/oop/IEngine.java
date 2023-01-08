@@ -17,5 +17,5 @@ public interface IEngine {
      */
     void run();
 
-    void mapChanged(GrassField map, GridPane worldMap) throws Exception;
+    void mapChanged(SimulationEngine engine) throws Exception;
 }
