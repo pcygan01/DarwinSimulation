@@ -1,4 +1,6 @@
 package agh.ics.oop;
+import javafx.scene.layout.GridPane;
+
 import java.sql.SQLOutput;
 import java.util.*;
 
@@ -31,8 +33,10 @@ public class GrassField implements IPositionChangeObserver{
     private List<Vector2d> sortedVectors;
     private final int jungleSizeIfGT1;
 
+    public GridPane worldMap;
 
-    public GrassField(int n, int height, int width, boolean borderType, int energyFromPlant, boolean grassesType, int grassesMoreEachDay){
+
+    public GrassField(int n, int height, int width, boolean borderType, int energyFromPlant, boolean grassesType, int grassesMoreEachDay, GridPane worldMap){
         this.lowerLeft = new Vector2d(0,0);
         this.upperRight = new Vector2d(width-1, height-1);
         this.borderType = borderType;
@@ -51,6 +55,7 @@ public class GrassField implements IPositionChangeObserver{
         //only for grassesType 1
         this.sortedVectors = new ArrayList<>();
         this.jungleSizeIfGT1 = (int) Math.ceil(height*width/5.0);
+        this.worldMap = worldMap;
 
         if (grassesType){
             initializeVectors();
@@ -251,6 +256,9 @@ public class GrassField implements IPositionChangeObserver{
         return this.grasses.size();
     }
 
+    public GridPane getWorldMap() {
+        return this.worldMap;
+    }
 
 
 }

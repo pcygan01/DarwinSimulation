@@ -1,5 +1,7 @@
 package agh.ics.oop;
 
+import javafx.scene.layout.GridPane;
+
 /**
  * The interface responsible for managing the moves of the animals.
  * Assumes that Vector2d and MoveDirection classes are defined.
@@ -14,4 +16,6 @@ public interface IEngine {
      *
      */
     void run();
+
+    void mapChanged(GrassField map, GridPane worldMap) throws Exception;
 }

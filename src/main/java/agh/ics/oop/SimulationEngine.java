@@ -1,8 +1,11 @@
 package agh.ics.oop;
 
+import agh.ics.oop.gui.App;
+import javafx.scene.layout.GridPane;
+
 import java.util.*;
 
-public class SimulationEngine implements IEngine{
+public class SimulationEngine implements IEngine, Runnable{
     private GrassField map;
     private ArrayList<Animal> animals;
     private ArrayList<Animal> deadAnimals;
@@ -13,8 +16,10 @@ public class SimulationEngine implements IEngine{
     private final int maxMutation;
     private final boolean mutationType;
 
+    private final LinkedList<IMapChangeObserver> observers;
 
-    public SimulationEngine(GrassField map, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType){
+
+    public SimulationEngine(App application, GrassField map, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType){
         this.map = map;
         this.moveDelay = moveDelay;
         this.animals = new ArrayList<>();
@@ -32,6 +37,9 @@ public class SimulationEngine implements IEngine{
         this.minMutation = minMutation;
         this.maxMutation = maxMutation;
         this.mutationType = mutationType;
+
+        this.observers = new LinkedList<>();
+        addObserver(application);
 
     }
 
@@ -125,6 +133,7 @@ public class SimulationEngine implements IEngine{
                 System.out.println(this.map);
                 liveDay();
                 endDay();
+                update();
                 System.out.println(this.animals.get(0).getEnergy());
                 try {
                     Thread.sleep(this.moveDelay);
@@ -173,4 +182,17 @@ public class SimulationEngine implements IEngine{
     }
 
     //dla animal statistics mozna chyba brac z animala
+
+    public void addObserver(IMapChangeObserver observer){
+        this.observers.push(observer);
+    }
+
+    public void update(){
+        for (IMapChangeObserver observer: this.observers){
+            observer.mapChanged(this.map, this.map.getWorldMap());
+        }
+    }
+    @Override
+    public void mapChanged(GrassField map, GridPane worldMap) throws Exception {
+    }
 }

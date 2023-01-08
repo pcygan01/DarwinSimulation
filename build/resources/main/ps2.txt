@@ -1,9 +1,9 @@
-heightWorld 100
-widthWorld 100
-initialNumberOfPlants 100
+heightWorld 50
+widthWorld 50
+initialNumberOfPlants 50
 plantEnergy 20
 numberOfNewPlants 30
-initialNumberOfAnimals 100
+initialNumberOfAnimals 50
 startAnimalEnergy 100
 minEnergyToReproduction 50
 energyUsedToReproduction 30

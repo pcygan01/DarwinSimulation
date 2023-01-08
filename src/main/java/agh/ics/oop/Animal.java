@@ -62,6 +62,11 @@ public class Animal extends AbstractWorldMapElement{
         return (this.direction.toString());
     }
 
+    @Override
+    public String getPath() {
+        return "src/main/resources/zebra.png";
+    }
+
     public MapDirection getDirection() {
         return direction;
     }
