@@ -66,6 +66,8 @@ public class SimulationEngine implements IEngine, Runnable{
 
         }
         for(Animal a: tmp){
+            a.getPosition().incrementDeadAnimals();
+            this.map.updateVectors(a.getPosition());
             this.animals.remove(a);
             this.map.removeAnimal(a);
         }
@@ -116,7 +118,7 @@ public class SimulationEngine implements IEngine, Runnable{
             childAnimals.add(kid);
         }
         for(Animal a: childAnimals){
-            System.out.println("new kid");
+//            System.out.println("new kid");
             map.place(a);
             this.animals.add(a);
         }
@@ -144,12 +146,14 @@ public class SimulationEngine implements IEngine, Runnable{
                 throw new RuntimeException(e);
             }
 //            while(true){
-            for(int i = 0; i < 20; i++){
-                System.out.println(this.map);
+            for(int i = 0; i < 1000; i++){
+//                System.out.println(this.map);
+//                System.out.println(i);
                 liveDay();
                 endDay();
                 update();
-                System.out.println(this.animals.get(0).getEnergy());
+//                System.out.println(this.getAverageLifeSpan());
+//                System.out.println(this.animals.get(0).getEnergy());
                 try {
                     Thread.sleep(this.moveDelay);
                 } catch (InterruptedException e) {

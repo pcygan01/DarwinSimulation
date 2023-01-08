@@ -260,5 +260,4 @@ public class GrassField implements IPositionChangeObserver{
         return this.worldMap;
     }
 
-
 }

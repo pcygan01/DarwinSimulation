@@ -112,7 +112,7 @@ public class Animal extends AbstractWorldMapElement{
         }
         if(moved){
             if (this.map.canMoveTo(newPos)){ //chyba zwykle move no bo moze
-                System.out.println("moved to " + newPos);
+//                System.out.println("moved to " + newPos);
                 //this.position = newPos;
                 positionChanged(newPos);
             }

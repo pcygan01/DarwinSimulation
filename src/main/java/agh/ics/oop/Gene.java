@@ -59,11 +59,15 @@ public class Gene {
                     }
                     else{
                         int minusOrPlus = r.nextInt(2);
-                        if (minusOrPlus == 0) {
-                            this.genes[id] = (this.genes[id]-1) % this.n;
+                        if (minusOrPlus == 0) {//modulo -1%8 does not work what
+                            this.genes[id] = this.genes[id]-1;
+                            if (this.genes[id] == -1){
+                                this.genes[id] = 7;
+                            }
                         }
                         else{
-                            this.genes[id] = (this.genes[id]+1) % this.n;
+                            this.genes[id] =(this.genes[id]+1) % 8;
+
                         }
                     }
                     tmp[id] = false;
@@ -88,7 +92,6 @@ public class Gene {
                 moveNumber = (moveNumber+1)%n;
             }
         }
-
         return toMapDirection(this.genes[moveNumber]);
     }
     public int[] getGenes(){
