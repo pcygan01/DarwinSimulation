@@ -20,6 +20,7 @@ import javafx.scene.control.Label;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -51,7 +52,27 @@ public class App extends Application implements IMapChangeObserver {
     private boolean mutationVariantParameter; // false - pełna losowość, true - lekka korekta
     private boolean behaviourVariantParameter; // false - pełna predystancja, true - nieco szaleństwa
 
-    //public static Animal trackedAnimal;
+    boolean isRunning;
+    public Image animalImage;
+
+    {
+        try {
+            animalImage = new Image(new FileInputStream("src/main/resources/zebra.png"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Image grassImage;
+
+    {
+        try {
+            grassImage = new Image(new FileInputStream("src/main/resources/grass.png"));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public static void main(String[] args) {
         Application.launch(App.class);
@@ -93,6 +114,7 @@ public class App extends Application implements IMapChangeObserver {
         vbox.getChildren().clear();
         vbox.getChildren().add(simulationStart);
         vbox.setAlignment(Pos.CENTER);
+
     }
 
     public void showSecondScene() {
@@ -410,6 +432,7 @@ public class App extends Application implements IMapChangeObserver {
         Stage stage = new Stage();
 
         GridPane grid = new GridPane();
+
         GridPane worldMap = new GridPane();
         worldMap.setPrefWidth(600);
         worldMap.setPrefHeight(600);
@@ -424,9 +447,8 @@ public class App extends Application implements IMapChangeObserver {
 
         Button startButton = new Button("Start");
         Button stopButton = new Button("Stop");
-        HBox buttons = new HBox(20, startButton, stopButton);
-
-
+        Button stopTrackingButton = new Button("Stop tracking");
+        HBox buttons = new HBox(20, startButton, stopButton, stopTrackingButton);
 
 
         StatisticsChart animalsChart = new StatisticsChart("Number of animals");
@@ -438,18 +460,33 @@ public class App extends Application implements IMapChangeObserver {
 
         grid.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
         GrassField map = new GrassField(inputParameters.initialNumberOfPlants, inputParameters.heightWorld, inputParameters.widthWorld, inputParameters.mapVariant, inputParameters.plantEnergy, inputParameters.grassVariant, inputParameters.numberOfNewPlants, worldMap);
-        SimulationEngine engine = new SimulationEngine(this, map, statsBox, statisticsCharts, animalBox, 500, inputParameters.initialNumberOfAnimals, inputParameters.startAnimalEnergy, inputParameters.minEnergyToReproduction, inputParameters.energyUsedToReproduction, inputParameters.minNumberOfMutations, inputParameters.maxNumberOfMutations, inputParameters.DNAlength, inputParameters.mutationVariant, inputParameters.behaviourVariant);
+        SimulationEngine engine = new SimulationEngine(this, grid, map, statsBox, statisticsCharts, animalBox, 300, inputParameters.initialNumberOfAnimals, inputParameters.startAnimalEnergy, inputParameters.minEnergyToReproduction, inputParameters.energyUsedToReproduction, inputParameters.minNumberOfMutations, inputParameters.maxNumberOfMutations, inputParameters.DNAlength, inputParameters.mutationVariant, inputParameters.behaviourVariant);
 
-        createMap(map, engine, worldMap, null);
-        createStatistics(statisticsCharts, statsBox, engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan());
+        worldMap = createMap(map, engine, worldMap);
+        statsBox = createStatistics(statisticsCharts, statsBox, engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan());
 
         Thread engineThread = new Thread(engine);
         engineThread.start();
 
-        stopButton.setOnAction(event ->{
-
+        stopButton.setOnAction(event -> {
+            isRunning = false;
+            engine.pause();
+            stopButton.setDisable(true);
+            startButton.setDisable(false);
         });
 
+        startButton.setOnAction(event -> {
+            isRunning = true;
+            engine.start();
+            stopButton.setDisable(false);
+            startButton.setDisable(true);
+        });
+
+        stopTrackingButton.setOnAction(event -> {
+            if (isRunning) {
+                engine.stopTracking();
+            }
+        });
 
 
         VBox leftBox = new VBox(15, worldMap, buttons, animalBox);
@@ -468,7 +505,7 @@ public class App extends Application implements IMapChangeObserver {
 
     }
 
-    public static void createMap(GrassField map, SimulationEngine engine, GridPane grid, Animal trackedAnimal) throws FileNotFoundException {
+    public GridPane createMap(GrassField map, SimulationEngine engine, GridPane grid) throws FileNotFoundException {
         GridPane gridPane = new GridPane();
         gridPane.getChildren().clear();
         gridPane.setBackground(new Background(new BackgroundFill(Color.web("#CAE7D2"), CornerRadii.EMPTY, Insets.EMPTY)));
@@ -494,30 +531,34 @@ public class App extends Application implements IMapChangeObserver {
                 Vector2d pos = new Vector2d(x, y);
                 Object object = map.objectAt(pos);
                 if (map.isOccupied(pos)) {
-                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, true);
-                    gridPane.add(VBox.getBox(), pos.x, numberOfRows - pos.y - 1, 1, 1);
-                }
+                    boolean isTracked = false;
+                    if (engine.getTrackedAnimal() != null) {
+                        isTracked = true;
+                    }
+                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, animalImage, grassImage);
+                    VBox objectBox = VBox.getBox();
 
+                    if (object instanceof Animal && !isRunning) {
+                        objectBox.setOnMouseClicked(event -> {
+                            engine.setAnimalTracked(pos);
+                        });
+                    }
+
+                    gridPane.add(objectBox, pos.x, numberOfRows - pos.y - 1, 1, 1);
+
+
+                }
             }
         }
-
-        gridPane.setOnMouseClicked(event -> {
-            double mouseX = event.getX();
-            double mouseY = event.getY();
-            int row = (int) (mouseY / height);
-            int col = (int) (mouseX / width);
-            if (map.isOccupied(new Vector2d(col, row))) {
-                engine.setAnimalTracked(new Vector2d(col, row));
-            }
-        });
 
 
         grid.getChildren().clear();
         grid.getChildren().add(gridPane);
+        return grid;
     }
 
 
-    private void createStatistics(StatisticsChart[] statisticsCharts, VBox statsBox, int[] mostPopularGenes, int days, int numOfAnimals, int numOfGrasses, int numOfFreeFields, double averageEnergy, double averageLifespan) {
+    private VBox createStatistics(StatisticsChart[] statisticsCharts, VBox statsBox, int[] mostPopularGenes, int days, int numOfAnimals, int numOfGrasses, int numOfFreeFields, double averageEnergy, double averageLifespan) {
         statsBox.getChildren().clear();
         StatisticsChart animalsChart = statisticsCharts[0];
         StatisticsChart plantsChart = statisticsCharts[1];
@@ -542,9 +583,10 @@ public class App extends Application implements IMapChangeObserver {
         //statsBox.getChildren().add(new Label(""+mostPopularGenes[0]+"\n" + mostPopularGenes[1] +"\n" + mostPopularGenes[2]));
         statsBox.setAlignment(Pos.CENTER);
 
+        return statsBox;
     }
 
-    private void createAnimalStats(VBox animalBox, SimulationEngine engine) {
+    private VBox createAnimalStats(VBox animalBox, SimulationEngine engine) {
         Animal animal = engine.getTrackedAnimal();
         Label genome = new Label("Genome: ");
         Label activated = new Label("Activated part of the genome: ");
@@ -570,17 +612,69 @@ public class App extends Application implements IMapChangeObserver {
         animalBox.getChildren().add(ageBox);
         animalBox.setSpacing(10);
 
+        return animalBox;
     }
 
     @Override
     public void mapChanged(SimulationEngine engine) {
         Platform.runLater(() -> {
             try {
-                createMap(engine.getMap(), engine, engine.getMap().getWorldMap(), engine.getTrackedAnimal());
-                createStatistics(engine.getStatisticsCharts(), engine.getStatsBox(), engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan());
-                if (engine.getTrackedAnimal() != null){
-                    createAnimalStats(engine.getAnimalBox(), engine);
+                Button startButton = new Button("Start");
+                Button stopButton = new Button("Stop");
+                Button stopTrackingButton = new Button("Stop tracking");
+                HBox buttons = new HBox(20, startButton, stopButton, stopTrackingButton);
+
+                stopButton.setOnAction(event -> {
+                    isRunning = false;
+                    engine.isRunning = false;
+                    stopButton.setDisable(true);
+                    startButton.setDisable(false);
+                });
+
+                startButton.setOnAction(event -> {
+                    isRunning = true;
+                    engine.isRunning = true;
+                    stopButton.setDisable(false);
+                    startButton.setDisable(true);
+                });
+
+                stopTrackingButton.setOnAction(event -> {
+                    if (isRunning) {
+                        engine.stopTracking();
+                    }
+                });
+
+                GridPane grid = engine.getGrid();
+                GridPane worldMap = new GridPane();
+                worldMap.setPrefWidth(600);
+                worldMap.setPrefHeight(600);
+
+                VBox statsBox = new VBox();
+                statsBox.setPrefWidth(300);
+                statsBox.setPrefHeight(800);
+
+                VBox animalBox = new VBox();
+                animalBox.setPrefWidth(500);
+                animalBox.setPrefHeight(250);
+
+
+                worldMap.getChildren().add(createMap(engine.getMap(), engine, engine.getMap().getWorldMap()));
+                statsBox.getChildren().add(createStatistics(engine.getStatisticsCharts(), engine.getStatsBox(), engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan()));
+                if (engine.getTrackedAnimal() != null) {
+                    animalBox.getChildren().add(createAnimalStats(engine.getAnimalBox(), engine));
                 }
+
+
+
+                VBox leftBox = new VBox(15, worldMap, buttons, animalBox);
+                leftBox.setAlignment(Pos.CENTER);
+
+                grid.getChildren().clear();
+                grid.add(leftBox, 0, 0);
+                grid.add(statsBox, 1, 0);
+                grid.setHgap(20);
+
+
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }

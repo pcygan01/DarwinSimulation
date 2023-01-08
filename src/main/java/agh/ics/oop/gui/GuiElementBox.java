@@ -14,21 +14,16 @@ import java.io.FileNotFoundException;
 public class GuiElementBox extends Node {
     private final VBox vbox;
 
-    public GuiElementBox(IMapElement object, double height, double width, boolean isTracked) throws FileNotFoundException {
-        Image image = null;
-        try {
-            image = new Image(new FileInputStream(object.getPath()));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            System.out.println(e.getMessage());
-            System.exit(1);
+    public GuiElementBox(IMapElement object, double height, double width, Image animalImage, Image grassImage) throws FileNotFoundException {
+        ImageView imageView = new ImageView();
+        if (object instanceof Animal) {
+            imageView.setImage(animalImage);
         }
-        ImageView imageView = new ImageView(image);
+        if (object instanceof Grass){
+            imageView.setImage(grassImage);
+        }
         imageView.setFitWidth(width);
         imageView.setFitHeight(height);
-        if(isTracked){
-            imageView.setStyle("-fx-background-color: ORANGE");
-        }
 
         vbox = new VBox(imageView);
         vbox.setAlignment(Pos.CENTER);

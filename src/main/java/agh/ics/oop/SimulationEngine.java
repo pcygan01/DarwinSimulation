@@ -2,6 +2,7 @@ package agh.ics.oop;
 
 import agh.ics.oop.gui.App;
 import agh.ics.oop.gui.StatisticsChart;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
 import java.util.*;
@@ -21,14 +22,17 @@ public class SimulationEngine implements IEngine, Runnable{
     private final LinkedList<IMapChangeObserver> observers;
     private int days;
 
+    public boolean isRunning = true;
     VBox statsBox;
 
     VBox animalBox;
 
+    GridPane grid;
+
     StatisticsChart[] statisticsCharts;
 
 
-    public SimulationEngine(App application, GrassField map, VBox statsBox, StatisticsChart[] statisticsCharts, VBox animalBox, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType){
+    public SimulationEngine(App application, GridPane grid, GrassField map, VBox statsBox, StatisticsChart[] statisticsCharts, VBox animalBox, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType){
         this.map = map;
         this.moveDelay = moveDelay;
         this.animals = new ArrayList<>();
@@ -50,6 +54,7 @@ public class SimulationEngine implements IEngine, Runnable{
         this.statsBox = statsBox;
         this.statisticsCharts = statisticsCharts;
         this.animalBox = animalBox;
+        this.grid = grid;
 
         this.observers = new LinkedList<>();
         addObserver(application);
@@ -138,36 +143,46 @@ public class SimulationEngine implements IEngine, Runnable{
         breedAnimals();
         spawnNewGrass();
     }
-    public void run(){
-//        while(true){
+
+    public void pause(){
+        this.isRunning = false;
+    }
+
+    public void start(){
+        this.isRunning = true;
+    }
+
+
+    public void run() {
+        while(true) {
             try {
                 Thread.sleep(this.moveDelay);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-//            while(true){
-            for(int i = 0; i < 1000; i++){
-//                System.out.println(this.map);
-//                System.out.println(i);
+            while (this.isRunning) {
                 liveDay();
                 endDay();
                 update();
-//                System.out.println(this.getAverageLifeSpan());
-//                System.out.println(this.animals.get(0).getEnergy());
                 try {
                     Thread.sleep(this.moveDelay);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-//            }
-        }
-    }
 
+            }
+        }
+
+    }
 
 
 
     public void setAnimalTracked(Vector2d pos){
         this.trackedAnimal =  this.map.getAnimalWhoEats(pos);
+    }
+
+    public void stopTracking(){
+        this.trackedAnimal = null;
     }
 
     public ArrayList<Animal> getAnimals(){
@@ -230,6 +245,10 @@ public class SimulationEngine implements IEngine, Runnable{
 
     public VBox getStatsBox(){
         return this.statsBox;
+    }
+
+    public GridPane getGrid(){
+        return this.grid;
     }
 
     public GrassField getMap(){
