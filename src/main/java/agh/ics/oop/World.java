@@ -9,8 +9,8 @@ public class World {
 //        Application.launch(App.class, args);
 
         System.out.println("start");
-        GrassField map = new GrassField(5, 6, 6, true, 20, false, 2);
-        SimulationEngine engine = new SimulationEngine(map, 300, 2, 200, 30, 100,80,0,2, 32, false, false);
+        GrassField map = new GrassField(5, 6, 6, false, 5, false, 1);
+        SimulationEngine engine = new SimulationEngine(map, 300, 5, 30, 15, 10,0,4,32, false, false);
         engine.run();
         System.out.println("stop");
     }

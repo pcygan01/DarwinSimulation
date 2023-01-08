@@ -16,28 +16,43 @@ public class Animal extends AbstractWorldMapElement{
     private final Gene genes;
     private int childrenAmount;
     private int daysLived;
-    private final int minMutation;
-    private final int maxMutation;
-    private final boolean mutationType; //0 - pełna losowość, 1 - lekka korekta
+
+//    private final boolean mutationType; //0 - pełna losowość, 1 - lekka korekta
     private final boolean behaviorType; //0 - pełna predestynacja, 1 - nieco szaleństwa
 
     private final int energyToReproduce;
-    public Animal(GrassField map, Vector2d initialPosition, int energy, int moveEnergy, int minMutation, int maxMutation, boolean mutationType, boolean behaviorType, int genesLength, int energyToReproduce){
+
+    //at start
+    public Animal(GrassField map, Vector2d initialPosition, int energy, boolean behaviorType, int genesLength, int energyToReproduce){
         super(initialPosition);
         this.direction = MapDirection.NORTH;
         this.map = map;
         this.observers = new ArrayList<>();
         this.energy = energy;
-        this.moveEnergy = moveEnergy;
+        this.moveEnergy = 1;
         //this.startEnergy = startEnergy;
         this.genes = new Gene(genesLength);
         this.childrenAmount = 0;
         this.daysLived = 0;
-        this.minMutation = minMutation;
-        this.maxMutation = maxMutation;
-        this.mutationType = mutationType;
         this.behaviorType = behaviorType;
         this.energyToReproduce = energyToReproduce;
+    }
+
+    //kid
+    public Animal(GrassField map, Vector2d initialPosition, int energy, int minMutation, int maxMutation, int energyToReproduce, boolean mutationType, boolean behaviorType, Animal parent1, Animal parent2){
+        super(initialPosition);
+        this.direction = MapDirection.NORTH;
+        this.map = map;
+        this.observers = new ArrayList<>();
+        this.energy = energy;
+        this.moveEnergy = 1;
+        //this.startEnergy = startEnergy;
+        this.genes = new Gene(parent1, parent2, mutationType, minMutation, maxMutation);
+        this.childrenAmount = 0;
+        this.daysLived = 0;
+        this.behaviorType = behaviorType;
+        this.energyToReproduce = energyToReproduce;
+
     }
     public String toString(){
         return (this.direction.toString());
@@ -97,6 +112,12 @@ public class Animal extends AbstractWorldMapElement{
     }
 
 
+    public int getDaysLived(){
+        return daysLived;
+    }
+    public Gene getGenes(){
+        return genes;
+    }
     public void addEnergy(int energyToAdd){
         this.energy += energyToAdd;
     }
@@ -105,6 +126,13 @@ public class Animal extends AbstractWorldMapElement{
     }
     public int getEnergy(){
         return energy;
+    }
+
+    public void hasKid(){
+        this.childrenAmount += 1;
+    }
+    public boolean getBehaviorType(){
+        return this.behaviorType;
     }
 
 }

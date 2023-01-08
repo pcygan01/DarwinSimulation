@@ -10,6 +10,7 @@ import static java.lang.Math.*;
 
 public class GrassField implements IPositionChangeObserver{
     private final int n;
+
     private Map<Vector2d, ArrayList<Animal>> animals;
     private Map<Vector2d, Grass> grasses;
 //    private MapBoundary mapBoundaries;
@@ -112,8 +113,8 @@ public class GrassField implements IPositionChangeObserver{
                     if (grasses.get(pos) == null) {
                         this.grasses.put(pos, new Grass(pos));
                         grassesInJungle+=1;
-                        System.out.println("DZUNGLA" + grassesInJungle + " " + jungleSize);
-                        System.out.println("wymiary" + jungleBottom + " " + jungleHeight);
+//                        System.out.println("DZUNGLA" + grassesInJungle + " " + jungleSize);
+//                        System.out.println("wymiary" + jungleBottom + " " + jungleHeight);
                         return true;
                     }
                 }
@@ -201,40 +202,21 @@ public class GrassField implements IPositionChangeObserver{
         if(this.animals.get(pos) == null || this.animals.get(pos).size() == 0){
             return null;
         }
-        List<Animal> rivals = new ArrayList<>();
-        int bestEnergy = -10000;
-        for(Animal a: animals.get(pos)){ //z najwieksza energia
-            if(a.getEnergy() == bestEnergy){
-                rivals.add(a);
-            }
-            else if(a.getEnergy() > bestEnergy){
-                bestEnergy = a.getEnergy();
-                rivals.clear();
-                rivals.add(a);
-            }
-        }
-        if(rivals.size() == 1){
-            System.out.println("HALO SIEMA");
-            return rivals.get(0);
-        }
-        //z najwieksza iloscia dzieci
-        List<Animal> rivalsKids = new ArrayList<>();
-        int mostKids = 0;
-        for(Animal a: rivals){
-            if(a.getChildrenAmount() == mostKids){
-                rivalsKids.add(a);
-            }
-            else if(a.getChildrenAmount() > mostKids){
-                mostKids = a.getChildrenAmount();
-                rivalsKids.clear();
-                rivalsKids.add(a);
-            }
-        }
-        return rivalsKids.get(0); //bierzemy z najwieksza iloscia dzieci, a jesli ma wiecej to losowo pierwszego z lewej
+        MyComparator myComparator = new MyComparator();
+        this.animals.get(pos).sort(myComparator);
+        return this.animals.get(pos).get(0);
     }
 
     public List<Animal> getParentsAtPos(Vector2d pos){
-        return null;
+        if(this.animals.get(pos) == null || this.animals.get(pos).size() < 2){
+            return null;
+        }
+        List<Animal> parents = new ArrayList<>();
+        MyComparator myComparator = new MyComparator();
+        this.animals.get(pos).sort(myComparator);
+        parents.add(this.animals.get(pos).get(0));
+        parents.add(this.animals.get(pos).get(1));
+        return parents;
     }
     public void removeAnimal(Animal a){
         List<Animal> animalsWhereA = this.animals.get(a.getPosition());
@@ -251,6 +233,10 @@ public class GrassField implements IPositionChangeObserver{
 
     public int getGrassesMoreEachDay() {
         return grassesMoreEachDay;
+    }
+
+    public List<Animal> getAnimalsAt(Vector2d pos){
+        return this.animals.get(pos);
     }
 
     public boolean isOccupied(Vector2d pos){

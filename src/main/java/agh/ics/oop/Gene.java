@@ -19,9 +19,60 @@ public class Gene {
     public Gene(int[] genes) {
         this.genes = genes;
     }
-    //TODO:
-//    public Gene(Animal animal1, Animal animal2){
-//    }
+    public Gene(Animal animal1, Animal animal2, boolean mutationType, int minMutation, int maxMutation){
+        Random r = new Random();
+        int[] a1Genes = animal1.getGenes().getGenes();
+        int[] a2Genes = animal2.getGenes().getGenes();
+        this.n = animal1.getGenes().getGenes().length;
+        this.genes = new int[n];
+        this.moveNumber = 0;
+
+        int side = r.nextInt(2);
+        if(side == 0){ //silny po lewej
+            int mergeIndex = (animal1.getEnergy() * this.n)/(animal1.getEnergy() + animal2.getEnergy());
+            for(int id = 0; id < mergeIndex; id++){
+                this.genes[id] = a1Genes[id];
+            }
+            for(int id = mergeIndex; id < this.n; id++){
+                this.genes[id] = a2Genes[id];
+            }
+        }
+        else{//silny po prawej
+            int mergeIndex = (animal2.getEnergy() * this.n)/(animal1.getEnergy() + animal2.getEnergy());
+            for(int id = 0; id < mergeIndex; id++){
+                this.genes[id] = a2Genes[id];
+            }
+            for(int id = mergeIndex; id < this.n; id++){
+                this.genes[id] = a1Genes[id];
+            }
+        }
+        //MUTACJE
+        int mutationsNumber = r.nextInt(maxMutation - minMutation) + minMutation;
+        boolean[] tmp = new boolean[this.n];
+        Arrays.fill(tmp, true);
+        for(int i = 0; i < mutationsNumber; i++){
+            while(true){
+                int id = r.nextInt(this.n);
+                if(tmp[id]){
+                    if(!mutationType){
+                        this.genes[id] = r.nextInt(8);
+                    }
+                    else{
+                        int minusOrPlus = r.nextInt(2);
+                        if (minusOrPlus == 0) {
+                            this.genes[id] = (this.genes[id]-1) % this.n;
+                        }
+                        else{
+                            this.genes[id] = (this.genes[id]+1) % this.n;
+                        }
+                    }
+                    tmp[id] = false;
+                    break;
+                }
+            }
+        }
+
+    }
 
     public MapDirection getMove(boolean behaviorType){
         //false - jeden po drugim zawsze, true - 80% że nastepny, 20% ze losowy
