@@ -409,9 +409,9 @@ public class App extends Application implements IMapChangeObserver {
                     i += 1;
                 }
             }
-            InputParameters inputParameters = new InputParameters(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), Integer.parseInt(tab[2]), Integer.parseInt(tab[3]), Integer.parseInt(tab[4]), Integer.parseInt(tab[5]), Integer.parseInt(tab[6]), Integer.parseInt(tab[7]), Integer.parseInt(tab[8]), Integer.parseInt(tab[9]), Integer.parseInt(tab[10]), Integer.parseInt(tab[11]), Boolean.parseBoolean(tab[12]), Boolean.parseBoolean(tab[13]), Boolean.parseBoolean(tab[14]), Boolean.parseBoolean(tab[15]), Boolean.parseBoolean(tab[16]));
+            InputParameters inputPreParameters = new InputParameters(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), Integer.parseInt(tab[2]), Integer.parseInt(tab[3]), Integer.parseInt(tab[4]), Integer.parseInt(tab[5]), Integer.parseInt(tab[6]), Integer.parseInt(tab[7]), Integer.parseInt(tab[8]), Integer.parseInt(tab[9]), Integer.parseInt(tab[10]), Integer.parseInt(tab[11]), Boolean.parseBoolean(tab[12]), Boolean.parseBoolean(tab[13]), Boolean.parseBoolean(tab[14]), Boolean.parseBoolean(tab[15]), Boolean.parseBoolean(tab[16]));
             try {
-                showSimulationScene(inputParameters);
+                showSimulationScene(inputPreParameters);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -562,7 +562,7 @@ public class App extends Application implements IMapChangeObserver {
                 Vector2d pos = new Vector2d(x, y);
                 Object object = map.objectAt(pos);
                 if (map.isOccupied(pos)) {
-                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, animalImage, grassImage, this.startAnimalEnergyParameter);
+                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, animalImage, grassImage, engine.getStartEnergy());
                     VBox objectBox = VBox.getBox();
 
                     if (object instanceof Animal && !isRunning) {

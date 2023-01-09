@@ -198,7 +198,9 @@ public class SimulationEngine implements IEngine, Runnable {
 
     }
 
-
+    public int getStartEnergy(){
+        return this.startEnergy;
+    }
     public void setAnimalTracked(Vector2d pos) {
         this.trackedAnimal = this.map.getAnimalWhoEats(pos);
         System.out.println("śledzony");
