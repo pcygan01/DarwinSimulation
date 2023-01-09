@@ -128,6 +128,7 @@ public class Animal extends AbstractWorldMapElement{
         return genes;
     }
     public void addEnergy(int energyToAdd){
+
         this.energy += energyToAdd;
     }
     public void addAge(){

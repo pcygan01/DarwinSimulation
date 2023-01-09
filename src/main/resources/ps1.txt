@@ -10,7 +10,7 @@ energyUsedToReproduction 80
 minNumberOfMutations 0
 maxNumberOfMutations 2
 DNAlength 32
-mapVariant true
+mapVariant false
 grassVariant false
 mutationVariant false
 behaviourVariant false

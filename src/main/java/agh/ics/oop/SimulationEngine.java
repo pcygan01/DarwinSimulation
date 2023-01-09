@@ -21,6 +21,7 @@ public class SimulationEngine implements IEngine, Runnable{
 
     private final LinkedList<IMapChangeObserver> observers;
     private int days;
+    private final int startEnergy;
 
     public boolean isRunning = true;
     VBox statsBox;
@@ -50,6 +51,7 @@ public class SimulationEngine implements IEngine, Runnable{
         this.minMutation = minMutation;
         this.maxMutation = maxMutation;
         this.mutationType = mutationType;
+        this.startEnergy = startEnergy;
         this.days = 0;
         this.statsBox = statsBox;
         this.statisticsCharts = statisticsCharts;
@@ -88,7 +90,7 @@ public class SimulationEngine implements IEngine, Runnable{
             if(map.getGrassAt(a.getPosition()) != null){
                 this.map.deleteGrassAtPos(a.getPosition());
                 Animal an = this.map.getAnimalWhoEats(a.getPosition());
-                an.addEnergy(this.map.getEnergyFromPlant());
+                an.addEnergy(Math.min(this.map.getEnergyFromPlant(), this.startEnergy - an.getEnergy()));
                 an.eatPlant();
             }
         }
@@ -138,10 +140,15 @@ public class SimulationEngine implements IEngine, Runnable{
 
     public void liveDay(){
         deleteDeadAnimals();
+//        System.out.println("deleting done");
         moveAnimals();
+//        System.out.println("moving done");
         eatPlants();
+//        System.out.println("eating done");
         breedAnimals();
+//        System.out.println("breeding done");
         spawnNewGrass();
+//        System.out.println("spawning done");
     }
 
     public void pause(){
@@ -161,6 +168,8 @@ public class SimulationEngine implements IEngine, Runnable{
                 throw new RuntimeException(e);
             }
             while (this.isRunning) {
+                System.out.println(getDays());
+//                System.out.println(this.map);
                 liveDay();
                 endDay();
                 update();
@@ -212,16 +221,28 @@ public class SimulationEngine implements IEngine, Runnable{
         for(Animal a: this.deadAnimals){
             sum += a.getDaysLived();
         }
+        if(this.deadAnimalsCount() == 0){
+            return 0;
+        }
         return (sum*1.0)/this.deadAnimalsCount();
 
     }
 
-    //TODO:
+    public int getBothAtTheSameVectorCount(){
+        int sum = 0;
+        for(Animal a: this.animals){
+            if (this.map.getGrassAt(a.getPosition()) != null){
+                sum += 1;
+            }
+        }
+        return sum;
+    }
+    //TODO: duzo zwierzat moze byc na jednym polu -> trzeba sprawdzac po wektorach
     public int getFreeFieldsCount(){
-        return (this.map.getUpperRight().x + 1)*(this.map.getUpperRight().y + 1) - this.allAnimalsCount() - this.allGrassesCount();
+        return (this.map.getUpperRight().x + 1)*(this.map.getUpperRight().y + 1) - this.allAnimalsCount() - this.allGrassesCount() + getBothAtTheSameVectorCount();
     }
     public int[] getMostPopularGenes(){ //chyba int[] bedzie najlepiej
-        /*Map<Gene, Integer> freq = new HashMap<Gene, Integer>();
+        Map<Gene, Integer> freq = new HashMap<Gene, Integer>();
         for (Animal a: this.animals){
             Integer count = freq.get(a.getGenes());
             if (count == null) {
@@ -231,11 +252,12 @@ public class SimulationEngine implements IEngine, Runnable{
                 freq.put(a.getGenes(), count + 1);
             }
         }
-        int[] res;
+
+        Gene gene = Collections.max(freq.entrySet(), (entry1, entry2) -> entry1.getValue() - entry2.getValue()).getKey();
 
 
-        return res;*/
-        return null;
+        return gene.getGenes();
+//        return gene.getGenes().toString; -> zmienic w App
     }
 
 

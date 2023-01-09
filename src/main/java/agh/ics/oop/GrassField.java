@@ -111,13 +111,14 @@ public class GrassField implements IPositionChangeObserver{
     public boolean spawnGrass(){
         Random random = new Random();
         int rInt = random.nextInt(10);
-        if (!grassesType){ //rownik
-            if(grassesInJungle < jungleSize && (rInt != 8 && rInt != 9)) {
+        if (!grassesType){ //rownik                                      nie ma miejsca poza jungla ale jest w jungli
+            if(grassesInJungle < jungleSize && (rInt != 8 && rInt != 9) || grassesInJungle < jungleSize && (this.upperRight.x+1) * (this.upperRight.y+1)-jungleSize == grasses.size() - grassesInJungle ) {
                 while(true){
                     Vector2d pos = new Vector2d(random.nextInt(this.upperRight.x + 1), random.nextInt(jungleHeight) + jungleBottom);
                     if (grasses.get(pos) == null) {
                         this.grasses.put(pos, new Grass(pos));
                         grassesInJungle+=1;
+
 //                        System.out.println("DZUNGLA" + grassesInJungle + " " + jungleSize);
 //                        System.out.println("wymiary" + jungleBottom + " " + jungleHeight);
                         return true;
@@ -127,12 +128,16 @@ public class GrassField implements IPositionChangeObserver{
             if (grasses.size() < (this.upperRight.x+1) * (this.upperRight.y+1)){
                 //spawnij poza jungla
                 while(true){
-                    int randomY = random.nextInt(this.upperRight.y+1-jungleHeight);
+                    //System.out.println(grasses.size() + " " + (this.upperRight.x+1) * (this.upperRight.y+1));
+
+                    int randomY = random.nextInt(this.upperRight.y+1-jungleHeight);//6-2=4 -> 0-3 jungle bottom - 2
                     if(randomY >= jungleBottom){
                         randomY += jungleHeight;
                     }
+//                    System.out.println("y = " + randomY);
                     Vector2d pos = new Vector2d(random.nextInt(this.upperRight.x + 1), randomY);
                     if (grasses.get(pos) == null) {
+
                         this.grasses.put(pos, new Grass(pos));
                         return true;
                     }

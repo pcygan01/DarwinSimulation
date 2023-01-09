@@ -11,6 +11,6 @@ minNumberOfMutations 00
 maxNumberOfMutations 50
 DNAlength 80
 mapVariant true
-grassVariant true
+grassVariant false
 mutationVariant true
 behaviourVariant true

@@ -51,7 +51,7 @@ public class InputParameters {
             throw new IllegalArgumentException("Invalid map height");
         if (this.widthWorld <= 0)
             throw new IllegalArgumentException("Invalid map width");
-        if (this.initialNumberOfPlants <= 0)
+        if (this.initialNumberOfPlants < 0 || this.initialNumberOfPlants > this.heightWorld * this.widthWorld)
             throw new IllegalArgumentException("Invalid initial number of plants");
         if (this.plantEnergy <= 0)
             throw new IllegalArgumentException("Invalid plant energy");
@@ -61,13 +61,13 @@ public class InputParameters {
             throw new IllegalArgumentException("Invalid initial number of animals");
         if (this.startAnimalEnergy <= 0)
             throw new IllegalArgumentException("Invalid animal's initial energy");
-        if (this.minEnergyToReproduction <= 0)
+        if (this.minEnergyToReproduction <= 0 || this.minEnergyToReproduction >= startAnimalEnergy)
             throw new IllegalArgumentException("Invalid initial number of animals");
-        if (this.energyUsedToReproduction <= 0)
+        if (this.energyUsedToReproduction <= 0 || this.energyUsedToReproduction >= minEnergyToReproduction)
             throw new IllegalArgumentException("Invalid energy used to reproduction");
         if (this.minNumberOfMutations < 0)
             throw new IllegalArgumentException("Invalid minimal number of mutations");
-        if (this.maxNumberOfMutations <= 0)
+        if (this.maxNumberOfMutations <= 0 || this.maxNumberOfMutations < minNumberOfMutations)
             throw new IllegalArgumentException("Invalid maximal number of mutations");
         if (this.DNAlength <= 0)
             throw new IllegalArgumentException("Invalid DNA length");

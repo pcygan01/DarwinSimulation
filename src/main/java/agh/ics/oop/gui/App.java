@@ -535,7 +535,7 @@ public class App extends Application implements IMapChangeObserver {
                     if (engine.getTrackedAnimal() != null) {
                         isTracked = true;
                     }
-                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, animalImage, grassImage);
+                    GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, animalImage, grassImage, this.startAnimalEnergyParameter);
                     VBox objectBox = VBox.getBox();
 
                     if (object instanceof Animal && !isRunning) {

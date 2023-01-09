@@ -121,5 +121,14 @@ public class Gene {
         return moveNumber;
     }
 
+    public String toString(){
+        StringBuilder s = new StringBuilder();
+        for(int el: this.genes){
+            s.append(Integer.toString(el));
+        }
+        return s.toString();
+
+    }
+
 
 }
