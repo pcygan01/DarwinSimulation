@@ -23,6 +23,7 @@ public class StatisticsChart {
         chart.getData().add(series);
         chart.setHorizontalGridLinesVisible(false);
         chart.setVerticalGridLinesVisible(false);
+        chart.setPrefHeight(200);
 
     }
 

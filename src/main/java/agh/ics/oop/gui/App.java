@@ -12,6 +12,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -20,6 +21,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.scene.control.Label;
+import javafx.stage.WindowEvent;
 
 import java.awt.*;
 import java.io.File;
@@ -524,6 +526,14 @@ public class App extends Application implements IMapChangeObserver {
         stage.setTitle("Darwin Simulation");
         stage.show();
 
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                engine.pause();
+                stage.close();
+            }
+        });
+
+
     }
 
     public GridPane createMap(GrassField map, SimulationEngine engine, GridPane grid) throws FileNotFoundException {
@@ -552,20 +562,11 @@ public class App extends Application implements IMapChangeObserver {
                 Vector2d pos = new Vector2d(x, y);
                 Object object = map.objectAt(pos);
                 if (map.isOccupied(pos)) {
-                    boolean isTracked = false;
-                    if (engine.getTrackedAnimal() != null) {
-                        isTracked = true;
-                    }
                     GuiElementBox VBox = new GuiElementBox((IMapElement) object, height, width, animalImage, grassImage, this.startAnimalEnergyParameter);
                     VBox objectBox = VBox.getBox();
 
                     if (object instanceof Animal && !isRunning) {
-                        objectBox.setOnMouseClicked(new EventHandler<Event>() {
-                            @Override
-                            public void handle(Event event) {
-                                engine.setAnimalTracked(pos);
-                            }
-                        });
+                        objectBox.setOnMouseClicked((EventHandler<Event>) event -> engine.setAnimalTracked(pos));
                     }
 
                     gridPane.add(objectBox, pos.x, numberOfRows - pos.y - 1, 1, 1);
@@ -579,7 +580,7 @@ public class App extends Application implements IMapChangeObserver {
     }
 
 
-    private VBox createStatistics(StatisticsChart[] statisticsCharts, VBox statsBox, int[] mostPopularGenes, int days, int numOfAnimals, int numOfGrasses, int numOfFreeFields, double averageEnergy, double averageLifespan) {
+    private VBox createStatistics(StatisticsChart[] statisticsCharts, VBox statsBox, int mostPopularGenes, int days, int numOfAnimals, int numOfGrasses, int numOfFreeFields, double averageEnergy, double averageLifespan) {
         statsBox.getChildren().clear();
         StatisticsChart animalsChart = statisticsCharts[0];
         StatisticsChart plantsChart = statisticsCharts[1];
@@ -598,10 +599,12 @@ public class App extends Application implements IMapChangeObserver {
         statsBox.getChildren().add(emptyFieldsChart.getChart());
         statsBox.getChildren().add(averageEnergyChart.getChart());
         statsBox.getChildren().add(averageLifespanChart.getChart());
-        Label label = new Label("The most common genotypes");
+        Label label = new Label("The most common genotype");
         label.setFont(new Font("Arial", 17));
+        Label label2 = new Label("" + mostPopularGenes);
+        label2.setFont(new Font("Arial", 17));
         statsBox.getChildren().add(label);
-        //statsBox.getChildren().add(new Label(""+mostPopularGenes[0].toString()+"\n" + mostPopularGenes[1] +"\n" + mostPopularGenes[2]));
+        statsBox.getChildren().add(label2);
         statsBox.setAlignment(Pos.CENTER);
 
         return statsBox;
@@ -626,7 +629,7 @@ public class App extends Application implements IMapChangeObserver {
 
         Label genomeR = new Label("" + animal.getGenes());
         genomeR.setFont(new Font("Arial", 15));
-        Label activatedR = new Label("" +animal.getActivatedGene());
+        Label activatedR = new Label("" + animal.getActivatedGene());
         activatedR.setFont(new Font("Arial", 15));
         Label energyR = new Label("" + animal.getEnergy());
         energyR.setFont(new Font("Arial", 15));
@@ -680,55 +683,50 @@ public class App extends Application implements IMapChangeObserver {
                 Button stopButton = new Button("Stop");
                 Button stopTrackingButton = new Button("Stop tracking");
                 HBox buttons = new HBox(20, startButton, stopButton, stopTrackingButton);
-                stopButton.setOnMouseClicked(new EventHandler<Event>() {
-                    @Override
-                    public void handle(Event event) {
-                        isRunning = false;
-                        engine.isRunning = false;
-                        stopButton.setDisable(true);
-                        startButton.setDisable(false);
-                    }
 
+                stopButton.setOnMouseClicked(event -> {
+                    isRunning = false;
+                    engine.isRunning = false;
+                    stopButton.setDisable(true);
+                    startButton.setDisable(false);
                 });
-                startButton.setOnMouseClicked(new EventHandler<Event>() {
-                    @Override
-                    public void handle(Event event) {
-                        isRunning = true;
-                        engine.isRunning = true;
-                        stopButton.setDisable(false);
-                        startButton.setDisable(true);
-                    }
-
+                startButton.setOnMouseClicked(event -> {
+                    isRunning = true;
+                    engine.isRunning = true;
+                    stopButton.setDisable(false);
+                    startButton.setDisable(true);
                 });
 
-                stopTrackingButton.setOnMouseClicked(new EventHandler<Event>() {
-                    @Override
-                    public void handle(Event event) {
-                        if (isRunning) {
-                            engine.stopTracking();
-                        }
+                stopTrackingButton.setOnMouseClicked(event -> {
+                    if (isRunning) {
+                        engine.stopTracking();
                     }
-
                 });
 
                 GridPane grid = engine.getGrid();
-                GridPane worldMap = new GridPane();
+                GridPane worldMap = engine.getMap().getWorldMap();
                 worldMap.setPrefWidth(600);
                 worldMap.setPrefHeight(600);
 
-                VBox statsBox = new VBox();
+                VBox statsBox = engine.getStatsBox();
                 statsBox.setPrefWidth(300);
                 statsBox.setPrefHeight(800);
 
-                VBox animalBox = new VBox();
+                VBox animalBox = engine.getAnimalBox();
                 animalBox.setPrefWidth(500);
                 animalBox.setPrefHeight(250);
 
+                GridPane nWorldMap = new GridPane();
+                VBox nStatsBox = new VBox();
+                VBox nAnimalBox = new VBox();
 
-                worldMap.getChildren().add(createMap(engine.getMap(), engine, engine.getMap().getWorldMap()));
-                statsBox.getChildren().add(createStatistics(engine.getStatisticsCharts(), engine.getStatsBox(), engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan()));
+                worldMap.getChildren().clear();
+                worldMap.getChildren().add(createMap(engine.getMap(), engine, nWorldMap));
+                statsBox.getChildren().clear();
+                statsBox.getChildren().add(createStatistics(engine.getStatisticsCharts(), nStatsBox, engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan()));
+                animalBox.getChildren().clear();
                 if (engine.getTrackedAnimal() != null) {
-                    animalBox.getChildren().add(createAnimalStats(engine.getAnimalBox(), engine));
+                    animalBox.getChildren().add(createAnimalStats(nAnimalBox, engine));
                 }
 
 
