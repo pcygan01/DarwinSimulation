@@ -3,6 +3,8 @@ package agh.ics.oop.gui;
 import agh.ics.oop.*;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -12,6 +14,7 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -28,7 +31,6 @@ import java.util.Scanner;
 
 public class App extends Application implements IMapChangeObserver {
     private final VBox vbox = new VBox();
-    static GridPane gridPane = new GridPane();
     private int heightWorldParameter; // wysokość mapy
     private int widthWorldParameter; // szerokość mapy
 
@@ -51,7 +53,8 @@ public class App extends Application implements IMapChangeObserver {
     private boolean grassVariantParameter; // false - zalesione równiki, true - toksyczne trupy
     private boolean mutationVariantParameter; // false - pełna losowość, true - lekka korekta
     private boolean behaviourVariantParameter; // false - pełna predystancja, true - nieco szaleństwa
-
+    private boolean savingToFileParameter; // false - nie, true - tak
+    boolean parametersOk = true;
     boolean isRunning;
     public Image animalImage;
 
@@ -94,9 +97,9 @@ public class App extends Application implements IMapChangeObserver {
         startButton.setFont(new Font("Arial", 40));
         startButton.setTextFill(Color.web("#81c483"));
         startButton.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
-        startButton.setOnAction((event -> {
+        startButton.setOnMouseClicked(event -> {
             showSecondScene();
-        }));
+        });
 
         Image image = new Image("world.png");
         ImageView imageView = new ImageView();
@@ -120,11 +123,11 @@ public class App extends Application implements IMapChangeObserver {
     public void showSecondScene() {
         Button mySettingsButton = new Button("My settings");
         mySettingsButton.setFont(new Font("Arial", 30));
-        mySettingsButton.setOnAction((event -> showMySettings()));
+        mySettingsButton.setOnMouseClicked(event -> showMySettings());
 
         Button predefinedButton = new Button("Predefined settings");
         predefinedButton.setFont(new Font("Arial", 30));
-        predefinedButton.setOnAction((event -> showPredefinedSettings()));
+        predefinedButton.setOnMouseClicked(event -> showPredefinedSettings());
 
         HBox buttonsBox = new HBox(predefinedButton, mySettingsButton);
         buttonsBox.setAlignment(Pos.CENTER);
@@ -169,6 +172,10 @@ public class App extends Application implements IMapChangeObserver {
         behaviourVariant.getItems().addAll("In order", "A bit of madness");
         behaviourVariant.setPrefWidth(170);
 
+        ChoiceBox<String> savingToFile = new ChoiceBox<>();
+        savingToFile.getItems().addAll("Yes", "No");
+        savingToFile.setPrefWidth(170);
+
         Label heightWorldLabel = new Label("Map height: ");
         heightWorldLabel.setFont(new Font("Arial", 20));
         Label widthWorldLabel = new Label("Map width: ");
@@ -209,6 +216,8 @@ public class App extends Application implements IMapChangeObserver {
         animalsSettingsLabel.setFont(new Font("Arial", 30));
         Label variantsSettingsLabel = new Label("Simulation variants");
         variantsSettingsLabel.setFont(new Font("Arial", 30));
+        Label savingToFileLabel = new Label("Saving to a file: ");
+        savingToFileLabel.setFont(new Font("Arial", 20));
 
 
         VBox mapLabelBox = new VBox(
@@ -268,11 +277,11 @@ public class App extends Application implements IMapChangeObserver {
 
         Button predefinedButton = new Button("Predefined settings");
         predefinedButton.setFont(new Font("Arial", 20));
-        predefinedButton.setOnAction((event -> showPredefinedSettings()));
+        predefinedButton.setOnMouseClicked((event -> showPredefinedSettings()));
 
         Button startButton = new Button("Start simulation");
         startButton.setFont(new Font("Arial", 20));
-        startButton.setOnAction((event -> {
+        startButton.setOnMouseClicked(event -> {
             this.heightWorldParameter = Integer.parseInt(heightWorld.getText());
             this.widthWorldParameter = Integer.parseInt(widthWorld.getText());
             this.initialNumberOfPlantsParameter = Integer.parseInt(initialNumberOfPlants.getText());
@@ -301,20 +310,28 @@ public class App extends Application implements IMapChangeObserver {
                 this.behaviourVariantParameter = false;
             else
                 this.behaviourVariantParameter = true;
+            if (savingToFile.getValue() == "No")
+                this.savingToFileParameter = false;
+            else
+                this.savingToFileParameter = true;
 
-            InputParameters inputParameters = new InputParameters(heightWorldParameter, widthWorldParameter, initialNumberOfPlantsParameter, plantEnergyParameter, numberOfNewPlantsParameter, initialNumberOfAnimalsParameter, startAnimalEnergyParameter, minEnergyToReproductionParameter, energyUsedToReproductionParameter, minNumberOfMutationsParameter, maxNumberOfMutationsParameter, DNAlengthParameter, mapVariantParameter, grassVariantParameter, mutationVariantParameter, behaviourVariantParameter);
+            InputParameters inputParameters = new InputParameters(heightWorldParameter, widthWorldParameter, initialNumberOfPlantsParameter, plantEnergyParameter, numberOfNewPlantsParameter, initialNumberOfAnimalsParameter, startAnimalEnergyParameter, minEnergyToReproductionParameter, energyUsedToReproductionParameter, minNumberOfMutationsParameter, maxNumberOfMutationsParameter, DNAlengthParameter, mapVariantParameter, grassVariantParameter, mutationVariantParameter, behaviourVariantParameter, savingToFileParameter);
             try {
                 inputParameters.checkConditions();
+                this.parametersOk = true;
             } catch (Exception e) {
                 showException(e);
+                this.parametersOk = false;
             }
-            try {
-                showSimulationScene(inputParameters);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
+            if (this.parametersOk) {
+                try {
+                    showSimulationScene(inputParameters);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
-        }));
+        });
 
         HBox buttonsBox = new HBox(predefinedButton, startButton);
         buttonsBox.setAlignment(Pos.CENTER);
@@ -326,7 +343,7 @@ public class App extends Application implements IMapChangeObserver {
         inputGrid.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
         inputGrid.setPrefHeight(950);
         inputGrid.setPrefWidth(950);
-        inputGrid.setVgap(25);
+        inputGrid.setVgap(20);
         inputGrid.setHgap(50);
 
         inputGrid.add(mapSettingsLabel, 0, 0);
@@ -341,8 +358,10 @@ public class App extends Application implements IMapChangeObserver {
         inputGrid.add(variantsSettingsLabel, 0, 6);
         inputGrid.add(variantsLabelBox, 0, 7);
         inputGrid.add(variantsTextBox, 1, 7);
-        inputGrid.add(predefinedButton, 0, 8);
-        inputGrid.add(startButton, 1, 8);
+        inputGrid.add(savingToFileLabel, 0, 8);
+        inputGrid.add(savingToFile, 1, 8);
+        inputGrid.add(predefinedButton, 0, 9);
+        inputGrid.add(startButton, 1, 9);
 
         vbox.getChildren().clear();
         vbox.getChildren().add(inputGrid);
@@ -356,13 +375,13 @@ public class App extends Application implements IMapChangeObserver {
 
         Button mySettings = new Button("My settings");
         mySettings.setFont(new Font("Arial", 30));
-        mySettings.setOnAction((event -> showMySettings()));
+        mySettings.setOnMouseClicked((event -> showMySettings()));
 
         Button startButton = new Button("Start simulation");
         startButton.setFont(new Font("Arial", 30));
-        startButton.setOnAction((event -> {
+        startButton.setOnMouseClicked(event -> {
             Scanner scan;
-            String[] tab = new String[16];
+            String[] tab = new String[17];
             if (preSettings.getValue() == "option 1") {
                 try {
                     scan = new Scanner(new File("src/main/resources/ps1.txt"));
@@ -388,13 +407,13 @@ public class App extends Application implements IMapChangeObserver {
                     i += 1;
                 }
             }
-            InputParameters inputParameters = new InputParameters(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), Integer.parseInt(tab[2]), Integer.parseInt(tab[3]), Integer.parseInt(tab[4]), Integer.parseInt(tab[5]), Integer.parseInt(tab[6]), Integer.parseInt(tab[7]), Integer.parseInt(tab[8]), Integer.parseInt(tab[9]), Integer.parseInt(tab[10]), Integer.parseInt(tab[11]), Boolean.parseBoolean(tab[12]), Boolean.parseBoolean(tab[13]), Boolean.parseBoolean(tab[14]), Boolean.parseBoolean(tab[15]));
+            InputParameters inputParameters = new InputParameters(Integer.parseInt(tab[0]), Integer.parseInt(tab[1]), Integer.parseInt(tab[2]), Integer.parseInt(tab[3]), Integer.parseInt(tab[4]), Integer.parseInt(tab[5]), Integer.parseInt(tab[6]), Integer.parseInt(tab[7]), Integer.parseInt(tab[8]), Integer.parseInt(tab[9]), Integer.parseInt(tab[10]), Integer.parseInt(tab[11]), Boolean.parseBoolean(tab[12]), Boolean.parseBoolean(tab[13]), Boolean.parseBoolean(tab[14]), Boolean.parseBoolean(tab[15]), Boolean.parseBoolean(tab[16]));
             try {
                 showSimulationScene(inputParameters);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-        }));
+        });
 
 
         HBox buttonsBox = new HBox(mySettings, startButton);
@@ -458,9 +477,11 @@ public class App extends Application implements IMapChangeObserver {
         StatisticsChart averageLifespanChart = new StatisticsChart("Average lifespan of animals");
         StatisticsChart[] statisticsCharts = {animalsChart, plantsChart, emptyFieldsChart, averageEnergyChart, averageLifespanChart};
 
+        Animal trackedAnimal = null;
+
         grid.setBackground(new Background(new BackgroundFill(Color.web("#81c483"), CornerRadii.EMPTY, Insets.EMPTY)));
         GrassField map = new GrassField(inputParameters.initialNumberOfPlants, inputParameters.heightWorld, inputParameters.widthWorld, inputParameters.mapVariant, inputParameters.plantEnergy, inputParameters.grassVariant, inputParameters.numberOfNewPlants, worldMap);
-        SimulationEngine engine = new SimulationEngine(this, grid, map, statsBox, statisticsCharts, animalBox, 300, inputParameters.initialNumberOfAnimals, inputParameters.startAnimalEnergy, inputParameters.minEnergyToReproduction, inputParameters.energyUsedToReproduction, inputParameters.minNumberOfMutations, inputParameters.maxNumberOfMutations, inputParameters.DNAlength, inputParameters.mutationVariant, inputParameters.behaviourVariant);
+        SimulationEngine engine = new SimulationEngine(this, grid, map, statsBox, statisticsCharts, animalBox, 300, inputParameters.initialNumberOfAnimals, inputParameters.startAnimalEnergy, inputParameters.minEnergyToReproduction, inputParameters.energyUsedToReproduction, inputParameters.minNumberOfMutations, inputParameters.maxNumberOfMutations, inputParameters.DNAlength, inputParameters.mutationVariant, inputParameters.behaviourVariant, inputParameters.savingToFile);
 
         worldMap = createMap(map, engine, worldMap);
         statsBox = createStatistics(statisticsCharts, statsBox, engine.getMostPopularGenes(), engine.getDays(), engine.allAnimalsCount(), engine.allGrassesCount(), engine.getFreeFieldsCount(), engine.getAverageEnergy(), engine.getAverageLifeSpan());
@@ -468,28 +489,28 @@ public class App extends Application implements IMapChangeObserver {
         Thread engineThread = new Thread(engine);
         engineThread.start();
 
-        stopButton.setOnAction(event -> {
+        stopButton.setOnMouseClicked(event -> {
             isRunning = false;
             engine.pause();
             stopButton.setDisable(true);
             startButton.setDisable(false);
         });
 
-        startButton.setOnAction(event -> {
+        startButton.setOnMouseClicked(event -> {
             isRunning = true;
             engine.start();
             stopButton.setDisable(false);
             startButton.setDisable(true);
         });
 
-        stopTrackingButton.setOnAction(event -> {
+        stopTrackingButton.setOnMouseClicked(event -> {
             if (isRunning) {
                 engine.stopTracking();
             }
         });
 
 
-        VBox leftBox = new VBox(15, worldMap, buttons, animalBox);
+        VBox leftBox = new VBox(30, worldMap, buttons, animalBox);
         leftBox.setAlignment(Pos.CENTER);
 
         grid.getChildren().clear();
@@ -539,18 +560,18 @@ public class App extends Application implements IMapChangeObserver {
                     VBox objectBox = VBox.getBox();
 
                     if (object instanceof Animal && !isRunning) {
-                        objectBox.setOnMouseClicked(event -> {
-                            engine.setAnimalTracked(pos);
+                        objectBox.setOnMouseClicked(new EventHandler<Event>() {
+                            @Override
+                            public void handle(Event event) {
+                                engine.setAnimalTracked(pos);
+                            }
                         });
                     }
 
                     gridPane.add(objectBox, pos.x, numberOfRows - pos.y - 1, 1, 1);
-
-
                 }
             }
         }
-
 
         grid.getChildren().clear();
         grid.getChildren().add(gridPane);
@@ -580,7 +601,7 @@ public class App extends Application implements IMapChangeObserver {
         Label label = new Label("The most common genotypes");
         label.setFont(new Font("Arial", 17));
         statsBox.getChildren().add(label);
-        //statsBox.getChildren().add(new Label(""+mostPopularGenes[0]+"\n" + mostPopularGenes[1] +"\n" + mostPopularGenes[2]));
+        //statsBox.getChildren().add(new Label(""+mostPopularGenes[0].toString()+"\n" + mostPopularGenes[1] +"\n" + mostPopularGenes[2]));
         statsBox.setAlignment(Pos.CENTER);
 
         return statsBox;
@@ -589,28 +610,64 @@ public class App extends Application implements IMapChangeObserver {
     private VBox createAnimalStats(VBox animalBox, SimulationEngine engine) {
         Animal animal = engine.getTrackedAnimal();
         Label genome = new Label("Genome: ");
+        genome.setFont(new Font("Arial", 15));
         Label activated = new Label("Activated part of the genome: ");
+        activated.setFont(new Font("Arial", 15));
         Label energy = new Label("Energy: ");
+        energy.setFont(new Font("Arial", 15));
         Label plantsEaten = new Label("Number of plants eaten: ");
+        plantsEaten.setFont(new Font("Arial", 15));
         Label numOfChildren = new Label("Number of children: ");
+        numOfChildren.setFont(new Font("Arial", 15));
         Label age = new Label("Age: ");
+        age.setFont(new Font("Arial", 15));
         Label deathDay = new Label("Death day: ");
+        deathDay.setFont(new Font("Arial", 15));
 
-        HBox genomeBox = new HBox(20, genome, new Label("" + animal.getGenes()));
-        //HBox activatedBox = new HBox(20, activated, new Label("" +animal.get))
-        HBox energyBox = new HBox(20, energy, new Label("" + animal.getEnergy()));
-        HBox plantsEatenBox = new HBox(20, plantsEaten, new Label("" + animal.getPlantsEaten()));
-        HBox numOfChildrenBox = new HBox(20, numOfChildren, new Label("" + animal.getChildrenAmount()));
-        HBox ageBox = new HBox(20, age, new Label("" + animal.getDaysLived()));
-        //HBox deathDayBox = new HBox(20, deathDay, new Label("" + animal.getDaysLived()));
+        Label genomeR = new Label("" + animal.getGenes());
+        genomeR.setFont(new Font("Arial", 15));
+        Label activatedR = new Label("" +animal.getActivatedGene());
+        activatedR.setFont(new Font("Arial", 15));
+        Label energyR = new Label("" + animal.getEnergy());
+        energyR.setFont(new Font("Arial", 15));
+        Label plantsEatenR = new Label("" + animal.getPlantsEaten());
+        plantsEatenR.setFont(new Font("Arial", 15));
+        Label numOfChildrenR = new Label("" + animal.getChildrenAmount());
+        numOfChildrenR.setFont(new Font("Arial", 15));
+        Label ageR = new Label("" + animal.getDaysLived());
+        ageR.setFont(new Font("Arial", 15));
+        Label deathDayR1 = new Label("Still alive");
+        deathDayR1.setFont(new Font("Arial", 15));
+        Label deathDayR2 = new Label("" + animal.getDeathDay());
+        deathDayR2.setFont(new Font("Arial", 15));
+
+
+        VBox genomeBox = new VBox(2, genome, genomeR);
+        HBox activatedBox = new HBox(20, activated, activatedR);
+        HBox energyBox = new HBox(30, energy, energyR);
+        HBox plantsEatenBox = new HBox(30, plantsEaten, plantsEatenR);
+        HBox numOfChildrenBox = new HBox(30, numOfChildren, numOfChildrenR);
+        HBox ageBox = new HBox(30, age, ageR);
+        HBox deathDayBox = new HBox(30, deathDay, deathDayR1);
+        if (animal.getDeathDay() != -1) {
+            deathDayBox.getChildren().clear();
+            deathDayBox.getChildren().add(deathDay);
+            deathDayBox.getChildren().add(deathDayR2);
+            deathDayBox.setSpacing(30);
+        }
 
         animalBox.getChildren().clear();
         animalBox.getChildren().add(genomeBox);
+        animalBox.getChildren().add(activatedBox);
         animalBox.getChildren().add(energyBox);
         animalBox.getChildren().add(plantsEatenBox);
         animalBox.getChildren().add(numOfChildrenBox);
         animalBox.getChildren().add(ageBox);
-        animalBox.setSpacing(10);
+        animalBox.getChildren().add(deathDayBox);
+        animalBox.setBackground(new Background(new BackgroundFill(Color.web("#CAE7D2"), CornerRadii.EMPTY, Insets.EMPTY)));
+        animalBox.setPrefWidth(600);
+        animalBox.setSpacing(17);
+
 
         return animalBox;
     }
@@ -623,25 +680,35 @@ public class App extends Application implements IMapChangeObserver {
                 Button stopButton = new Button("Stop");
                 Button stopTrackingButton = new Button("Stop tracking");
                 HBox buttons = new HBox(20, startButton, stopButton, stopTrackingButton);
-
-                stopButton.setOnAction(event -> {
-                    isRunning = false;
-                    engine.isRunning = false;
-                    stopButton.setDisable(true);
-                    startButton.setDisable(false);
-                });
-
-                startButton.setOnAction(event -> {
-                    isRunning = true;
-                    engine.isRunning = true;
-                    stopButton.setDisable(false);
-                    startButton.setDisable(true);
-                });
-
-                stopTrackingButton.setOnAction(event -> {
-                    if (isRunning) {
-                        engine.stopTracking();
+                stopButton.setOnMouseClicked(new EventHandler<Event>() {
+                    @Override
+                    public void handle(Event event) {
+                        isRunning = false;
+                        engine.isRunning = false;
+                        stopButton.setDisable(true);
+                        startButton.setDisable(false);
                     }
+
+                });
+                startButton.setOnMouseClicked(new EventHandler<Event>() {
+                    @Override
+                    public void handle(Event event) {
+                        isRunning = true;
+                        engine.isRunning = true;
+                        stopButton.setDisable(false);
+                        startButton.setDisable(true);
+                    }
+
+                });
+
+                stopTrackingButton.setOnMouseClicked(new EventHandler<Event>() {
+                    @Override
+                    public void handle(Event event) {
+                        if (isRunning) {
+                            engine.stopTracking();
+                        }
+                    }
+
                 });
 
                 GridPane grid = engine.getGrid();
@@ -665,8 +732,7 @@ public class App extends Application implements IMapChangeObserver {
                 }
 
 
-
-                VBox leftBox = new VBox(15, worldMap, buttons, animalBox);
+                VBox leftBox = new VBox(30, worldMap, buttons, animalBox);
                 leftBox.setAlignment(Pos.CENTER);
 
                 grid.getChildren().clear();

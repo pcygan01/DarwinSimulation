@@ -23,6 +23,11 @@ public class Animal extends AbstractWorldMapElement{
     private final int energyToReproduce;
     private int plantsEaten;
 
+    private int deathDay = -1;
+
+    private int activatedGene;
+
+
     //at start
     public Animal(GrassField map, Vector2d initialPosition, int energy, boolean behaviorType, int genesLength, int energyToReproduce){
         super(initialPosition);
@@ -87,6 +92,7 @@ public class Animal extends AbstractWorldMapElement{
     public void move(){
         Vector2d newPos;
         MapDirection moveDirection = this.genes.getMove(this.behaviorType);
+        this.activatedGene = this.genes.getActivatedGene();
         boolean moved = true;
         newPos = this.position.add(moveDirection.toUnitVector());
         this.direction = moveDirection;
@@ -155,6 +161,20 @@ public class Animal extends AbstractWorldMapElement{
 
     public int getPlantsEaten(){
         return this.plantsEaten;
+    }
+
+    public void setDeathDay(int day){
+        this.deathDay = day;
+    }
+    public int getDeathDay(){
+        return this.deathDay;
+    }
+
+    public void setActivatedGene(int g){
+        this.activatedGene = g;
+    }
+    public int getActivatedGene(){
+        return this.activatedGene;
     }
 
 }

@@ -8,6 +8,8 @@ public class Gene {
     private int[] genes;
     Random r = new Random();
     private int moveNumber;
+
+    private int activatedGene;
     public Gene(int n) {
         this.n = n;
         this.moveNumber = 0;
@@ -92,8 +94,14 @@ public class Gene {
                 moveNumber = (moveNumber+1)%n;
             }
         }
+        this.activatedGene = this.genes[moveNumber];
         return toMapDirection(this.genes[moveNumber]);
     }
+
+    public int getActivatedGene(){
+       return this.activatedGene;
+    }
+
     public int[] getGenes(){
         return this.genes;
     }

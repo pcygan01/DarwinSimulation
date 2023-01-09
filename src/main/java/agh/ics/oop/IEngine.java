@@ -17,5 +17,6 @@ public interface IEngine {
      */
     void run();
 
+
     void mapChanged(SimulationEngine engine) throws Exception;
 }

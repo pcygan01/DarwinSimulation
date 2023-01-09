@@ -25,8 +25,9 @@ public class InputParameters {
     public boolean grassVariant; // false - zalesione równiki, true - toksyczne trupy
     public boolean mutationVariant; // false - pełna losowość, true - lekka korekta
     public boolean behaviourVariant; // false - pełna predystancja, true - nieco szaleństwa
+    public boolean savingToFile;
 
-    public InputParameters(int heightWorld, int widthWorld, int initialNumberOfPlants, int plantEnergy, int numberOfNewPlants, int initialNumberOfAnimals, int startAnimalEnergy, int minEnergyToReproduction, int energyUsedToReproduction, int minNumberOfMutations, int maxNumberOfMutations, int DNAlength, boolean mapVariant, boolean grassVariant, boolean mutationVariant, boolean behaviourVariant) {
+    public InputParameters(int heightWorld, int widthWorld, int initialNumberOfPlants, int plantEnergy, int numberOfNewPlants, int initialNumberOfAnimals, int startAnimalEnergy, int minEnergyToReproduction, int energyUsedToReproduction, int minNumberOfMutations, int maxNumberOfMutations, int DNAlength, boolean mapVariant, boolean grassVariant, boolean mutationVariant, boolean behaviourVariant, boolean savingToFile){
         this.heightWorld = heightWorld;
         this.widthWorld = widthWorld;
         this.initialNumberOfPlants = initialNumberOfPlants;
@@ -43,6 +44,7 @@ public class InputParameters {
         this.grassVariant = grassVariant;
         this.mutationVariant = mutationVariant;
         this.behaviourVariant = behaviourVariant;
+        this.savingToFile = savingToFile;
     }
 
 
@@ -55,7 +57,7 @@ public class InputParameters {
             throw new IllegalArgumentException("Invalid initial number of plants");
         if (this.plantEnergy <= 0)
             throw new IllegalArgumentException("Invalid plant energy");
-        if (this.numberOfNewPlants <= 0)
+        if (this.numberOfNewPlants < 0)
             throw new IllegalArgumentException("Invalid number of new plants each day");
         if (this.initialNumberOfAnimals <= 0)
             throw new IllegalArgumentException("Invalid initial number of animals");

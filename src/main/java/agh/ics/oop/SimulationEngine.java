@@ -5,7 +5,11 @@ import agh.ics.oop.gui.StatisticsChart;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+
 
 public class SimulationEngine implements IEngine, Runnable{
     private GrassField map;
@@ -17,7 +21,7 @@ public class SimulationEngine implements IEngine, Runnable{
     private final int minMutation;
     private final int maxMutation;
     private final boolean mutationType;
-    private Animal trackedAnimal;
+    private Animal trackedAnimal = null;
 
     private final LinkedList<IMapChangeObserver> observers;
     private int days;
@@ -30,10 +34,12 @@ public class SimulationEngine implements IEngine, Runnable{
 
     GridPane grid;
 
+    private boolean savingToFile;
+
     StatisticsChart[] statisticsCharts;
 
 
-    public SimulationEngine(App application, GridPane grid, GrassField map, VBox statsBox, StatisticsChart[] statisticsCharts, VBox animalBox, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType){
+    public SimulationEngine(App application, GridPane grid, GrassField map, VBox statsBox, StatisticsChart[] statisticsCharts, VBox animalBox, int moveDelay, int animalsAtStart, int startEnergy, int minEnergyToReproduce, int energyToReproduce, int minMutation, int maxMutation, int genesLength, boolean mutationType, boolean behaviorType, boolean savingToFile){
         this.map = map;
         this.moveDelay = moveDelay;
         this.animals = new ArrayList<>();
@@ -57,6 +63,7 @@ public class SimulationEngine implements IEngine, Runnable{
         this.statisticsCharts = statisticsCharts;
         this.animalBox = animalBox;
         this.grid = grid;
+        this.savingToFile = savingToFile;
 
         this.observers = new LinkedList<>();
         addObserver(application);
@@ -75,8 +82,10 @@ public class SimulationEngine implements IEngine, Runnable{
         for(Animal a: tmp){
             a.getPosition().incrementDeadAnimals();
             this.map.updateVectors(a.getPosition());
+            a.setDeathDay(this.days);
             this.animals.remove(a);
             this.map.removeAnimal(a);
+
         }
     }
     public void moveAnimals(){
@@ -173,6 +182,9 @@ public class SimulationEngine implements IEngine, Runnable{
                 liveDay();
                 endDay();
                 update();
+                if (this.savingToFile == true){
+                    saveToCSV();
+                }
                 try {
                     Thread.sleep(this.moveDelay);
                 } catch (InterruptedException e) {
@@ -188,6 +200,7 @@ public class SimulationEngine implements IEngine, Runnable{
 
     public void setAnimalTracked(Vector2d pos){
         this.trackedAnimal =  this.map.getAnimalWhoEats(pos);
+        System.out.println("śledzony");
     }
 
     public void stopTracking(){
@@ -288,11 +301,14 @@ public class SimulationEngine implements IEngine, Runnable{
         return this.statisticsCharts;
     }
 
+
     //dla animal statistics mozna chyba brac z animala
 
     public void addObserver(IMapChangeObserver observer){
         this.observers.push(observer);
     }
+
+
 
     public void update(){
         for (IMapChangeObserver observer: this.observers){
@@ -302,4 +318,35 @@ public class SimulationEngine implements IEngine, Runnable{
     @Override
     public void mapChanged(SimulationEngine engine) throws Exception {
     }
+
+
+    // Zapisywanie do pliku CSV
+
+    public void saveToCSV(){
+        try{
+            File file = new File("src/main/resources/data.csv");
+            if (!file.exists()){
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            FileWriter fileWriter = new FileWriter("src/main/resources/data.csv");
+            int dayS = this.days;
+            int liveAnimalsS = this.allAnimalsCount();
+            int plantsS = this.allGrassesCount();
+            double averageEnergyS = this.getAverageEnergy();
+            double averageLifespanS = this.getAverageLifeSpan();
+
+            String data = "" +dayS + ", " + liveAnimalsS + ", " + plantsS + ", " + averageEnergyS + ", " + averageLifespanS;
+            fileWriter.write(data);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
 }
