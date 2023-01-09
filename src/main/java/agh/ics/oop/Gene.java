@@ -26,8 +26,8 @@ public class Gene {
         int[] a1Genes = animal1.getGenes().getGenes();
         int[] a2Genes = animal2.getGenes().getGenes();
         this.n = animal1.getGenes().getGenes().length;
-        this.genes = new int[n];
-        this.moveNumber = 0;
+        this.genes = new int[this.n];
+        this.moveNumber = r.nextInt(this.n);
 
         int side = r.nextInt(2);
         if(side == 0){ //silny po lewej

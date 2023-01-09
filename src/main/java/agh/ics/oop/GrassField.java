@@ -146,7 +146,15 @@ public class GrassField implements IPositionChangeObserver{
             return false; // nie da sie zakladamy ze przed wywoalniem sprawdzamy czy nie ma wszystkich
         }
         else{//truposze
-            if(rInt == 8 || rInt == 9){
+//            System.out.println("trying to spawn grass");
+            //czy jest miejsce poza jungla
+            boolean isPlaceOutSideJungle = false;
+            for(int i = jungleSizeIfGT1; i < sortedVectors.size(); i++){
+                if (grasses.get(sortedVectors.get(i))==null){
+                    isPlaceOutSideJungle = true;
+                }
+            }
+            if(rInt != 8 && rInt != 9 || !isPlaceOutSideJungle){
                 boolean isPlace = false;
                 for(int i = 0; i < jungleSizeIfGT1; i++){
                     if (grasses.get(sortedVectors.get(i))==null){
@@ -159,6 +167,7 @@ public class GrassField implements IPositionChangeObserver{
                         Vector2d pos = sortedVectors.get(rId);
                         if (grasses.get(pos) == null) {
                             this.grasses.put(pos, new Grass(pos));
+//                            System.out.println("spawned grass");
                             return true;
                         }
                     }
@@ -170,10 +179,14 @@ public class GrassField implements IPositionChangeObserver{
                     Vector2d pos = sortedVectors.get(rId);
                     if (grasses.get(pos) == null) {
                         this.grasses.put(pos, new Grass(pos));
+//                        System.out.println("spawned grass");
+
                         return true;
                     }
                 }
             }
+//            System.out.println("cant spawn grass");
+
             return false;
         }
     }
@@ -192,6 +205,7 @@ public class GrassField implements IPositionChangeObserver{
         for(int i = 0; i <= this.upperRight.x; i++){
             for(int j = 0; j <= this.upperRight.y; j++){
                 this.sortedVectors.add(new Vector2d(i, j));
+                Collections.shuffle(this.sortedVectors);
             }
         }
     }
@@ -199,10 +213,12 @@ public class GrassField implements IPositionChangeObserver{
         int i = this.sortedVectors.indexOf(vector);
         while (i + 1 < sortedVectors.size() && sortedVectors.get(i+1).getDeadAnimals() < vector.getDeadAnimals()){
             Collections.swap(sortedVectors, i, i+1);
+            i += 1;
         }
-        while (i - 1 > -1 && sortedVectors.get(i-1).getDeadAnimals() > vector.getDeadAnimals()){
-            Collections.swap(sortedVectors, i, i-1);
-        }
+//        while (i - 1 > -1 && sortedVectors.get(i-1).getDeadAnimals() > vector.getDeadAnimals()){
+//            Collections.swap(sortedVectors, i, i-1);
+//            i -= 1;
+//        }
     }
     public String toString(){
         return new MapVisualizer(this).draw(getLowerLeft(), getUpperRight());

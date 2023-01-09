@@ -12,6 +12,6 @@ maxNumberOfMutations 2
 DNAlength 32
 mapVariant false
 grassVariant false
-mutationVariant false
+mutationVariant true
 behaviourVariant false
 savingToFile false

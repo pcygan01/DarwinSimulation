@@ -24,6 +24,7 @@ public class StatisticsChart {
         chart.setHorizontalGridLinesVisible(false);
         chart.setVerticalGridLinesVisible(false);
         chart.setPrefHeight(200);
+        chart.setCreateSymbols(false);
 
     }
 

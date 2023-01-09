@@ -249,13 +249,16 @@ public class SimulationEngine implements IEngine, Runnable {
     }
 
     public int getBothAtTheSameVectorCount() {
-        int sum = 0;
+        double sum = 0;
         for (Animal a : this.animals) {
             if (this.map.getGrassAt(a.getPosition()) != null) {
                 sum += 1;
             }
+            else if(this.map.getAnimalsAt(a.getPosition()).size() > 1){
+                sum += 1.0/this.map.getAnimalsAt(a.getPosition()).size();
+            }
         }
-        return sum;
+        return (int) sum;
     }
 
     //TODO: duzo zwierzat moze byc na jednym polu -> trzeba sprawdzac po wektorach
@@ -275,7 +278,7 @@ public class SimulationEngine implements IEngine, Runnable {
         int max = -1;
         int index = -1;
         for (int i = 0; i < 8; i++) {
-            System.out.println("" + i + " " + counter[i]);
+//            System.out.println("" + i + " " + counter[i]);
             if (max < counter[i]) {
                 max = counter[i];
                 index = i;

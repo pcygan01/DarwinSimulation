@@ -49,7 +49,6 @@ public class Animal extends AbstractWorldMapElement{
     //kid
     public Animal(GrassField map, Vector2d initialPosition, int energy, int minMutation, int maxMutation, int energyToReproduce, boolean mutationType, boolean behaviorType, Animal parent1, Animal parent2){
         super(initialPosition);
-        this.direction = MapDirection.NORTH;
         this.map = map;
         this.observers = new ArrayList<>();
         this.energy = energy;
@@ -61,6 +60,9 @@ public class Animal extends AbstractWorldMapElement{
         this.behaviorType = behaviorType;
         this.energyToReproduce = energyToReproduce;
         this.plantsEaten = 0;
+        Random r = new Random();
+        this.direction = this.genes.toMapDirection(r.nextInt(8)); //losowy kierunek
+
 
     }
     public String toString(){
